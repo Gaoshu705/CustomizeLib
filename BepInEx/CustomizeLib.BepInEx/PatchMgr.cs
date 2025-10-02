@@ -1,3 +1,6 @@
+// #define DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF // 启用多级词条
+// #define DEBUG_FEATURE__ENABLE_AUTO_EXTENSION // 启用自动扩展
+
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using System.Text;
@@ -942,10 +945,11 @@ namespace CustomizeLib.BepInEx
     [HarmonyPatch(typeof(NoticeMenu), nameof(NoticeMenu.Start))]
     public static class NoticeMenuPatch
     {
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix()
         {
-            #if false
+#if DEBUG_FEATURE__ENABLE_AUTO_EXTENSION
+            #region 自动扩容
             // 扩容plantData
             if (CustomCore.CustomPlants.Count > 0)
             {
@@ -972,7 +976,8 @@ namespace CustomizeLib.BepInEx
                 Array.Copy(GameAPP.spritePrefab, spritePrefab, GameAPP.spritePrefab.Length);
                 GameAPP.spritePrefab = spritePrefab;
             }
-            #endif
+#endregion
+#endif
             foreach (var plant in CustomCore.CustomPlants)//二创植物
             {
                 GameAPP.resourcesManager.plantPrefabs[plant.Key] = plant.Value.Prefab;//注册预制体
@@ -1204,14 +1209,48 @@ namespace CustomizeLib.BepInEx
     /// 进入一局游戏，显示二创植物Button
     /// </summary>
     [HarmonyPatch(typeof(Board), nameof(Board.Start))]
-    public static class ShowCustomPlantCards
+    public static class Board_Patch
     {
         [HarmonyPostfix]
-        private static void Postfix()
+        public static void Postfix()
         {
             SelectCustomPlants.InitCustomCards();
         }
     }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+    #region 多级词条同步
+    [HarmonyPatch(typeof(RandomZombie))]
+    public static class RandomZombie_Patch
+    {
+        [HarmonyPatch(nameof(RandomZombie.FirstArmorFall))]
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
+            // 普通词条对应升级
+            for (int i = (int)CustomCore.variables[0]; i < TravelMgr.advancedBuffs.Count; i++)
+            {
+                var result = Utils.IsMultiLevelBuff(BuffType.AdvancedBuff, i);
+                var index = CustomCore.CustomBuffsLevel.Where(kvp => kvp.Key.Item1 == BuffType.AdvancedBuff && kvp.Key.Item3 == i).Select(kvp => kvp.Key.Item2).ToList();
+                foreach (var ii in index)
+                    if (result.Item1 && TravelMgr.Instance.ultimateUpgrades[ii] == 0 && TravelMgr.Instance.advancedUpgrades[i])
+                        foreach (var value in result.Item2)
+                            TravelMgr.Instance.ultimateUpgrades[(int)CustomCore.variables[0] + value.Item2] = 1;
+            }
+            // Debuff词条对应升级
+            for (int i = (int)CustomCore.variables[0]; i < TravelMgr.debuffs.Count; i++)
+            {
+                var result = Utils.IsMultiLevelBuff(BuffType.Debuff, i);
+                var index = CustomCore.CustomBuffsLevel.Where(kvp => kvp.Key.Item1 == BuffType.Debuff && kvp.Key.Item3 == i).Select(kvp => kvp.Key.Item2).ToList();
+                foreach (var ii in index)
+                    if (result.Item1 && TravelMgr.Instance.ultimateUpgrades[i] == 0 && TravelMgr.Instance.debuff[i])
+                        foreach (var value in result.Item2)
+                            TravelMgr.Instance.ultimateUpgrades[(int)CustomCore.variables[0] + value.Item2] = 1;
+            }
+        }
+    }
+    #endregion
+#endif
 
     /// <summary>
     /// 点击换肤
@@ -1300,7 +1339,64 @@ namespace CustomizeLib.BepInEx
                 __instance.introduce.text = $"<color={CustomCore.CustomAdvancedBuffs[buffIndex].Item5}>{__instance.introduce.text}</color>";
             }
         }
+        
+        /// <summary>
+         /// 强究词条显示植物修复
+         /// </summary>
+        [HarmonyPatch(nameof(TravelBuffOptionButton.SetPlant), new Type[] { })]
+        [HarmonyPrefix]
+        public static bool PreSetPlant(TravelBuffOptionButton __instance)
+        {
+            var list = CustomCore.CustomUltimateBuffs.
+                Where(kvp => kvp.Key == __instance.buffIndex).
+                ToList();
+            if (__instance.buffType == BuffType.UltimateBuff && list.Count > 0)
+            {
+                foreach (var value in list)
+                {
+                    if (value.Value.Item1 == PlantType.Nothing)
+                        __instance.SetPlant(PlantType.EndoFlame);
+                    else
+                        __instance.SetPlant(value.Value.Item1);
+                }
+                return false;
+            }
+            return true;
+        }
     }
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+    #region 多级词条修复数组
+    [HarmonyPatch(typeof(TravelLookMenu))]
+    public static class TravelLookMenuPatch
+    {
+        /// <summary>
+        /// 修复数组，不然会多一个
+        /// </summary>
+        [HarmonyPatch(nameof(TravelLookMenu.GetUltiBuffs))]
+        [HarmonyPostfix]
+        public static void PostGetUltiBuffs(TravelLookMenu __instance, ref Il2CppSystem.Collections.Generic.List<Vector2Int> __result)
+        {
+            Il2CppSystem.Collections.Generic.List<Vector2Int> result = new Il2CppSystem.Collections.Generic.List<Vector2Int>();
+
+            // 遍历升级数组
+            for (int i = 0; i < __instance.manager.ultimateUpgrades.Length; i++)
+            {
+                if (CustomCore.CustomBuffsLevel.Count > 0 && CustomCore.CustomBuffsLevel.Any(kvp => ((int)CustomCore.variables[0] + kvp.Key.Item2) == i && kvp.Key.Item1 != BuffType.UltimateBuff))
+                    continue;
+                if (CustomCore.CustomBuffsLevel.Count > 0 && CustomCore.CustomBuffsLevel.Any(kvp => kvp.Key.Item1 == BuffType.UltimateBuff) && i == __instance.manager.ultimateUpgrades.Length - 1)
+                    break;
+                // 检查是否已解锁或显示所有
+                if (__instance.manager.ultimateUpgrades[i] != 0 || __instance.showAll)
+                {
+                    // 添加索引和等级到结果列表
+                    result.Add(new Vector2Int(i, __instance.manager.ultimateUpgrades[i]));
+                }
+            }
+            __result = result;
+        }
+    }
+    #endregion
+#endif
 
     [HarmonyPatch(typeof(TravelBuff))]
     public static class TravelBuffPatch
@@ -1309,13 +1405,24 @@ namespace CustomizeLib.BepInEx
         [HarmonyPatch("ChangeSprite")]
         public static void PreChangeSprite(TravelBuff __instance)
         {
+            var list = CustomCore.CustomUltimateBuffs.
+                    Where(kvp => kvp.Key == __instance.theBuffNumber).
+                    Select(kvp => kvp.Value).
+                    ToList();
+            if (__instance.theBuffType == (int)BuffType.UltimateBuff && list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (item.Item1 == PlantType.Nothing)
+                        __instance.thePlantType = PlantType.EndoFlame;
+                    else
+                        __instance.thePlantType = item.Item1;
+                }
+            }
+
             if (__instance.theBuffType == 1 && CustomCore.CustomAdvancedBuffs.ContainsKey(__instance.theBuffNumber))
             {
                 __instance.thePlantType = CustomCore.CustomAdvancedBuffs[__instance.theBuffNumber].Item1;
-            }
-            if (__instance.theBuffType == 2 && CustomCore.CustomUltimateBuffs.ContainsKey(__instance.theBuffNumber))
-            {
-                __instance.thePlantType = CustomCore.CustomUltimateBuffs[__instance.theBuffNumber].Item1;
             }
         }
     }
@@ -1327,6 +1434,7 @@ namespace CustomizeLib.BepInEx
     public static class TravelLookBuffPatch
     {
         [HarmonyPatch(nameof(TravelLookBuff.SetBuff))]
+        [HarmonyPostfix]
         public static void PostSetBuff(TravelLookBuff __instance, ref BuffType buffType, ref int buffIndex)
         {
             if (buffType is BuffType.AdvancedBuff && CustomCore.CustomAdvancedBuffs.ContainsKey(buffIndex)
@@ -1334,7 +1442,118 @@ namespace CustomizeLib.BepInEx
             {
                 __instance.introduce.text = $"<color={CustomCore.CustomAdvancedBuffs[buffIndex].Item5}>{__instance.introduce.text}</color>";
             }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+            #region 多级词条显示修复
+            // 多级词条显示修复
+            if (__instance == null)
+                return;
+            var result = Utils.IsMultiLevelBuff(__instance.buffType, __instance.buffIndex);
+            if (result.Item1)
+            {
+                foreach (var value in result.Item2)
+                {
+                    int index = (int)CustomCore.variables[0] + value.Item2;
+                    Il2CppStructArray<int> upgrades = __instance.manager.ultimateUpgrades;
+                    if (TravelLookMenu.Instance.showAll)
+                    {
+                        __instance.SetText(upgrades[index] != 0, upgrades[index]);
+                        if (upgrades[index] <= CustomCore.CustomBuffsLevel[value] &&
+                            upgrades[index] != 0)
+                        {
+                            if (CustomCore.CustomBuffsLevel[value] > 1)
+                                __instance.SetText($"已开启（{upgrades[index]}级）");
+                            else
+                                __instance.SetText($"已开启");
+                        }
+                        else
+                        {
+                            __instance.SetText("已关闭");
+                        }
+                    }
+                    else
+                    {
+                        if (upgrades[index] < CustomCore.CustomBuffsLevel[value] && CustomCore.CustomBuffsLevel[value] != 1)
+                        {
+                            if (upgrades[index] >= CustomCore.CustomBuffsLevel[value])
+                            {
+                                __instance.SetText("已满级");
+                            }
+                            else
+                                __instance.SetText($"{upgrades[index]}级");
+                        }
+                        if (upgrades[index] >= CustomCore.CustomBuffsLevel[value])
+                        {
+                            __instance.SetText("已满级");
+                        }
+                    }
+                }
+            }
+            #endregion
+#endif
         }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+        #region 多级词条升级
+        /// <summary>
+        /// 高级词条升级处理
+        /// </summary>
+        [HarmonyPatch(nameof(TravelLookBuff.OnMouseUpAsButton))]
+        [HarmonyPrefix]
+        public static bool PreOnMouseUpAsButton(TravelLookBuff __instance)
+        {
+            var result = Utils.IsMultiLevelBuff(__instance.buffType, __instance.buffIndex);
+            bool reset = false;
+            if (result.Item1)
+            {
+                foreach (var value in result.Item2)
+                {
+                    int index = (int)CustomCore.variables[0] + value.Item2;
+                    if (TravelLookMenu.Instance.showAll)
+                    {
+                        Il2CppStructArray<int> upgrades = __instance.manager.ultimateUpgrades;
+                        upgrades[index] = upgrades[index] + 1;
+                        if (upgrades[index] > CustomCore.CustomBuffsLevel[value])
+                            upgrades[index] = 0;
+                        __instance.SetText(upgrades[index] != 0, upgrades[index]);
+                        if (upgrades[index] <= CustomCore.CustomBuffsLevel[value] &&
+                            upgrades[index] != 0)
+                        {
+                            if (CustomCore.CustomBuffsLevel[value] > 1)
+                                __instance.SetText($"已开启（{upgrades[index]}级）");
+                            else
+                                __instance.SetText($"已开启");
+                        }
+                        return false;
+                    }
+                    else
+                    {
+                        Il2CppStructArray<int> upgrades = __instance.manager.ultimateUpgrades;
+                        if (upgrades[index] < CustomCore.CustomBuffsLevel[value] && Lawnf.TravelAdvanced(54) && CustomCore.CustomBuffsLevel[value] != 1)
+                        {
+                            upgrades[index] = upgrades[index] + 1;
+                            reset = true;
+                            if (upgrades[index] >= CustomCore.CustomBuffsLevel[value])
+                                __instance.SetText("已满级");
+                            else
+                                __instance.SetText($"{upgrades[index]}级");
+                        }
+                        if (upgrades[index] >= CustomCore.CustomBuffsLevel[value])
+                        {
+                            __instance.SetText("已满级");
+                        }
+                    }
+                }
+            }
+            if (reset)
+            {
+                __instance.manager.advancedUpgrades[54] = false;
+                return false;
+            }
+            return true;
+        }
+        #endregion
+#endif
     }
 
     [HarmonyPatch(typeof(TravelMgr))]
@@ -1342,7 +1561,7 @@ namespace CustomizeLib.BepInEx
     {
         [HarmonyPatch("Awake")]
         [HarmonyPrefix]
-        public static void PostAwake(TravelMgr __instance)
+        public static void PreAwake(TravelMgr __instance)
         {
             if (CustomCore.CustomAdvancedBuffs.Count > 0)
             {
@@ -1353,9 +1572,10 @@ namespace CustomizeLib.BepInEx
                 __instance.advancedUpgrades = newAdv;
                 __instance.advancedUnlockRound = newAdvUnlock;
             }
-            if (CustomCore.CustomUltimateBuffs.Count > 0)
+            if (CustomCore.CustomUltimateBuffs.Count > 0)//强究词条
             {
                 int[] newUlti = new int[__instance.ultimateUpgrades.Count + CustomCore.CustomUltimateBuffs.Count];
+                // 多级词条初始化，可能适配时无需取消注释 int[] newUlti = new int[__instance.ultimateUpgrades.Count + CustomCore.CustomBuffsLevel.Count(kvp => kvp.Key.Item1 == BuffType.UltimateBuff && kvp.Value != 1)];
                 Array.Copy(__instance.ultimateUpgrades, newUlti, __instance.ultimateUpgrades.Length);
                 __instance.ultimateUpgrades = newUlti;
             }
@@ -1365,6 +1585,19 @@ namespace CustomizeLib.BepInEx
                 Array.Copy(__instance.debuff, newdeb, __instance.debuff.Length);
                 __instance.debuff = newdeb;
             }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+            #region 多级词条扩容
+            if (CustomCore.CustomBuffsLevel.Count > 0)//高级词条
+            {
+                CustomCore.variables[0] = __instance.ultimateUpgrades.Length;
+                int length = CustomCore.CustomBuffsLevel.Count(kvp => kvp.Value != 1);
+                int[] newLevel = new int[__instance.ultimateUpgrades.Length + length];
+                Array.Copy(__instance.ultimateUpgrades, newLevel, __instance.ultimateUpgrades.Length);
+                __instance.ultimateUpgrades = newLevel;
+            }
+            #endregion
+#endif
 
             foreach (PlantType plantType in CustomCore.CustomUltimatePlants) // 注册强究植物
             {
@@ -1404,6 +1637,34 @@ namespace CustomizeLib.BepInEx
                 __result = CustomCore.CustomAdvancedBuffs[index].Item1;
             }
         }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+        #region 多级词条同步
+        [HarmonyPatch(nameof(TravelMgr.Start))]
+        [HarmonyPostfix]
+        public static void PostStart(TravelMgr __instance)
+        {
+            // 普通词条对应升级
+            for (int i = (int)CustomCore.variables[0]; i < __instance.advancedUpgrades.Count; i++)
+            {
+                var result = Utils.IsMultiLevelBuff(BuffType.AdvancedBuff, i);
+                foreach (var ii in result.Item2)
+                    if (result.Item1 && __instance.ultimateUpgrades[(int)CustomCore.variables[0] + ii.Item2] == 0 && __instance.advancedUpgrades[i])
+                        foreach (var value in result.Item2)
+                            __instance.ultimateUpgrades[(int)CustomCore.variables[0] + value.Item2] = 1;
+            }
+            // Debuff词条对应升级
+            for (int i = (int)CustomCore.variables[0]; i < __instance.debuff.Count; i++)
+            {
+                var result = Utils.IsMultiLevelBuff(BuffType.Debuff, i);
+                foreach (var ii in result.Item2)
+                    if (result.Item1 && __instance.ultimateUpgrades[(int)CustomCore.variables[0] + ii.Item2] == 0 && __instance.debuff[i])
+                        foreach (var value in result.Item2)
+                            __instance.ultimateUpgrades[(int)CustomCore.variables[0] + value.Item2] = 1;
+            }
+        }
+        #endregion
+#endif
     }
 
     [HarmonyPatch(typeof(TravelStore))]
@@ -1415,15 +1676,20 @@ namespace CustomizeLib.BepInEx
         {
             foreach (var travelBuff in __instance.gameObject.GetComponentsInChildren<TravelBuff>())
             {
-                if (travelBuff.theBuffType is (int)BuffType.AdvancedBuff && CustomCore.CustomAdvancedBuffs.ContainsKey(travelBuff.theBuffNumber))
+                if (travelBuff.theBuffType is (int)BuffType.AdvancedBuff &&
+                    CustomCore.CustomAdvancedBuffs.ContainsKey(travelBuff.theBuffNumber))
                 {
                     travelBuff.cost = CustomCore.CustomAdvancedBuffs[travelBuff.theBuffNumber].Item4;
-                    travelBuff.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = $"￥{CustomCore.CustomAdvancedBuffs[travelBuff.theBuffNumber].Item4}";
+                    travelBuff.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text =
+                        $"￥{CustomCore.CustomAdvancedBuffs[travelBuff.theBuffNumber].Item4}";
                 }
-                if (travelBuff.theBuffType is (int)BuffType.UltimateBuff && CustomCore.CustomUltimateBuffs.ContainsKey(travelBuff.theBuffNumber))
+
+                if (travelBuff.theBuffType is (int)BuffType.UltimateBuff &&
+                    CustomCore.CustomUltimateBuffs.ContainsKey(travelBuff.theBuffNumber))
                 {
                     travelBuff.cost = CustomCore.CustomUltimateBuffs[travelBuff.theBuffNumber].Item3;
-                    travelBuff.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = $"￥{CustomCore.CustomUltimateBuffs[travelBuff.theBuffNumber].Item4}";
+                    travelBuff.transform.GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text =
+                        $"￥{CustomCore.CustomUltimateBuffs[travelBuff.theBuffNumber].Item3.ToString()}";
                 }
             }
         }
@@ -2240,16 +2506,16 @@ namespace CustomizeLib.BepInEx
         }
     }
 
-    [HarmonyPatch(typeof(ZombieData))]
+    [HarmonyPatch(typeof(ZombieDataManager))]
     public static class ZombieDataPatch
     {
-        [HarmonyPatch("InitZombieData")]
+        [HarmonyPatch(nameof(ZombieDataManager.LoadData))]
         [HarmonyPostfix]
         public static void InitZombieData()
         {
             foreach (var z in CustomCore.CustomZombies)
             {
-                ZombieData.zombieData[(int)z.Key] = z.Value.Item3;
+                ZombieDataManager.zombieDataDic[z.Key] = z.Value.Item3;
             }
         }
     }

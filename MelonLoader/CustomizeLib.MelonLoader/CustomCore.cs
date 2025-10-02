@@ -1,4 +1,7 @@
-﻿using CustomizeLib.MelonLoader;
+﻿// #define DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF // 启用多级词条
+
+using CustomizeLib.MelonLoader;
+using Il2CppInterop.Runtime.Injection;
 using MelonLoader;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -184,6 +187,88 @@ namespace CustomizeLib.MelonLoader
             // 播放音效
             audioSource.Play();
         }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+        #region 多级词条注册词条部分
+        /// <summary>
+        /// 注册自定义词条
+        /// </summary>
+        /// <param name="text">词条描述</param>
+        /// <param name="buffType">词条类型(普通，强究，僵尸)</param>
+        /// <param name="canUnlock">解锁条件</param>
+        /// <param name="cost">词条商店花费积分</param>
+        /// <param name="color">词条颜色</param>
+        /// <param name="plantType">选词条时展示植物的类型</param>
+        /// <returns>分到的词条id</returns>
+        public static int RegisterCustomBuff(string text, BuffType buffType, Func<bool> canUnlock, int cost,
+            string? color = null, PlantType plantType = PlantType.Nothing) => RegisterCustomBuffLevel(text, buffType, canUnlock, cost, 1, color, plantType);
+
+        /// <summary>
+        /// 注册自定义词条
+        /// </summary>
+        /// <param name="text">词条描述</param>
+        /// <param name="buffType">词条类型(普通，强究，僵尸)</param>
+        /// <param name="canUnlock">解锁条件</param>
+        /// <param name="cost">词条商店花费积分</param>
+        /// <param name="maxLevel">最大等级</param>
+        /// <param name="color">词条颜色</param>
+        /// <param name="plantType">选词条时展示植物的类型</param>
+        /// <returns>分到的词条id</returns>
+        public static int RegisterCustomBuff(string text, BuffType buffType, Func<bool> canUnlock, int cost,
+            int maxLevel, string? color = null, PlantType plantType = PlantType.Nothing) => RegisterCustomBuffLevel(text, buffType, canUnlock, cost, maxLevel, color, plantType);
+
+        /// <summary>
+        /// 注册自定义词条
+        /// </summary>
+        /// <param name="text">词条描述</param>
+        /// <param name="buffType">词条类型(普通，强究，僵尸)</param>
+        /// <param name="canUnlock">解锁条件</param>
+        /// <param name="cost">词条商店花费积分</param>
+        /// <param name="color">词条颜色</param>
+        /// <param name="plantType">选词条时展示植物的类型</param>
+        /// <returns>分到的词条id</returns>
+        public static int RegisterCustomBuffLevel(string text, BuffType buffType, Func<bool> canUnlock, int cost,
+            int maxLevel = 1, string? color = null, PlantType plantType = PlantType.Nothing)
+        {
+            //if (color is not null) text = $"<color={color}>{text}</color>";
+            switch (buffType)
+            {
+                case BuffType.AdvancedBuff:
+                    {
+                        int i = TravelMgr.advancedBuffs.Count;
+                        CustomAdvancedBuffs.Add(i, (plantType, text, canUnlock, cost, color));
+                        if (maxLevel != 1)
+                            CustomBuffsLevel.Add((buffType, CustomBuffsLevel.Count, i), maxLevel);
+                        TravelMgr.advancedBuffs.Add(i, text);
+                        return i;
+                    }
+                case BuffType.UltimateBuff:
+                    {
+                        int i = TravelMgr.ultimateBuffs.Count;
+                        CustomUltimateBuffs.Add(i, (plantType, text, cost, color));
+                        if (maxLevel != 1)
+                        {
+                            CustomBuffsLevel.Add((buffType, CustomBuffsLevel.Count, i), maxLevel);
+                            MelonLogger.Msg($"{buffType} {CustomBuffsLevel.Count} {i} {maxLevel}");
+                        }
+                        TravelMgr.ultimateBuffs.Add(i, text);
+                        return i;
+                    }
+                case BuffType.Debuff:
+                    {
+                        int i = TravelMgr.debuffs.Count;
+                        CustomDebuffs.Add(i, text);
+                        if (maxLevel != 1)
+                            CustomBuffsLevel.Add((buffType, CustomBuffsLevel.Count, i), maxLevel);
+                        TravelMgr.debuffs.Add(i, text);
+                        return i;
+                    }
+                default:
+                    return -1;
+            }
+        }
+        #endregion
+#endif
 
         /// <summary>
         /// 注册自定义词条
@@ -817,8 +902,10 @@ namespace CustomizeLib.MelonLoader
                 p1.Die();
                 p2.Die();
                 p3.Die();
-                GameAPP.PlaySound(125, 0.5f, 1f);
             }, failAction);
+
+        public static void RegisterCustomFusionEvent(PlantType baseType, PlantType fusionType, Action<Plant, Plant> action) =>
+            CustomFusionEvents.Add((baseType, fusionType), action);
 
         public override void OnLateInitializeMelon()
         {
@@ -826,7 +913,7 @@ namespace CustomizeLib.MelonLoader
             ccore.AddComponent<CustomizeLib>().CustomCore = this;
             UnityEngine.Object.DontDestroyOnLoad(ccore);
         }
-
+        
         /// <summary>
         /// 自定义普通词条列表
         /// </summary>
@@ -892,6 +979,20 @@ namespace CustomizeLib.MelonLoader
         /// </summary>
         public static Dictionary<int, (PlantType, string, int, string?)> CustomUltimateBuffs { get; set; } = [];
 
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+        #region 多级词条相关字典
+        /// <summary>
+        /// 自定义词条最高等级列表
+        /// </summary>
+        public static Dictionary<(BuffType, int, int), int> CustomBuffsLevel { get; set; } = []; // 词条类型, 字典索引, 分配ID, 最大等级
+
+        /// <summary>
+        /// 存各种杂七杂八的数据
+        /// </summary>
+        public static object[] variables = new object[10];
+        #endregion
+#endif
+
         /// <summary>
         /// 自定义使用物品事件列表
         /// </summary>
@@ -915,7 +1016,7 @@ namespace CustomizeLib.MelonLoader
         /// <summary>
         /// 自定义僵尸列表
         /// </summary>
-        public static Dictionary<ZombieType, (GameObject, int, ZombieData.ZombieData_)> CustomZombies { get; set; } = [];
+        public static Dictionary<ZombieType, (GameObject, int, ZombieDataManager.ZombieData)> CustomZombies { get; set; } = [];
 
         /// <summary>
         /// 二创僵尸类型列表
@@ -942,10 +1043,10 @@ namespace CustomizeLib.MelonLoader
         /// </summary>
         public static List<PlantType> CustomUltimatePlants { get; set; } = [];
 
-        /*/// <summary>
-        /// 自定义融合事件列表
+        /// <summary>
+        /// 自定义融合事件列表（Key：底植物，融合植物，Value：底植物，结果植物）
         /// </summary>
-        public static Dictionary<PlantType, (PlantType, Action<Plant>)> CustomFusionEvent = new Dictionary<PlantType, (PlantType, Action<Plant>)>();*/
+        public static Dictionary<(PlantType, PlantType), Action<Plant, Plant>> CustomFusionEvents { get; set; } = [];
 
         /// <summary>
         /// 僵尸图鉴列表

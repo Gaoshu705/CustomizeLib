@@ -13,6 +13,9 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="puffultimategatling" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="Assembly-CSharp">
@@ -313,6 +316,10 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="puffultimategatling" />
 	</ItemGroup>
 
 	<ItemGroup>

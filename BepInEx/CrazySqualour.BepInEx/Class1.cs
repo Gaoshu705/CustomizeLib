@@ -1,22 +1,17 @@
-﻿using Il2Cpp;
-using MelonLoader;
-using HarmonyLib;
-using Il2CppTMPro;
+﻿using BepInEx.Unity.IL2CPP;
+using BepInEx;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.Rendering;
+using CustomizeLib.BepInEx;
+using System.Reflection;
+using BepInEx.Logging;
+using HarmonyLib;
+using Il2CppInterop.Runtime.Injection;
 using Unity.VisualScripting;
-using static UnityEngine.RuleTile.TilingRuleOutput;
-using System.Collections;
-using CustomizeLib.MelonLoader;
-using static Il2CppSystem.Linq.Enumerable;
 
-[assembly: MelonInfo(typeof(CrazySqualour.Core), "CrazySqualour", "1.0.0", "Salmon", null)]
-[assembly: MelonGame("LanPiaoPiao", "PlantsVsZombiesRH")]
-
-namespace CrazySqualour
+namespace CrazySqualourBepInEx
 {
-    public class Core : MelonMod
+    [BepInPlugin("salmon.crazysqualour", "CrazySqualour", "1.0")]
+    public class Core : BasePlugin
     {
         public static int levelID = -1;
         public static List<ZombieType> zombieList = new List<ZombieType>()
@@ -33,10 +28,12 @@ namespace CrazySqualour
             ZombieType.Gargantuar,
             ZombieType.RedGargantuar
         };
-
-        public override void OnInitializeMelon()
+        public static CustomLevelData data = default(CustomLevelData);
+        public override void Load()
         {
-            AssetBundle ab = CustomCore.GetAssetBundle(MelonAssembly.Assembly, "icon");
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            ClassInjector.RegisterTypeInIl2Cpp<EndoFlameSaver>();
+            AssetBundle ab = CustomCore.GetAssetBundle(Assembly.GetExecutingAssembly(), "icon");
             CustomLevelData customLevelData = new CustomLevelData();
             customLevelData.Name = (() => "严肃窝瓜3");
             Board.BoardTag boardTag = default(Board.BoardTag);
@@ -62,7 +59,7 @@ namespace CrazySqualour
                 ZombieType.RedGargantuar
             };
             customLevelData.ConveyBeltPlantTypes = (() => new List<PlantType> {
-                PlantType.Squalour, 
+                PlantType.Squalour,
                 PlantType.EndoFlame,
                 PlantType.JalaSquash,
                 PlantType.Squash,
@@ -86,8 +83,19 @@ namespace CrazySqualour
             };
             CustomLevelData customLevelData1 = customLevelData;
             levelID = CustomCore.RegisterCustomLevel(customLevelData1);
+            data = customLevelData1;
         }
     }
+
+    /*[HarmonyPatch(typeof(GameAPP), nameof(GameAPP.Start))]
+    public class GameAPPPatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix(GameAPP __instance)
+        {
+            GameAPP.ultimatePlantStartID = 0;
+        }
+    }*/
 
     [HarmonyPatch(typeof(InGameUI), nameof(InGameUI.Start))]
     public class InGameUIPatch
@@ -97,7 +105,7 @@ namespace CrazySqualour
         {
             if (GameAPP.theBoardLevel == Core.levelID && (int)GameAPP.theBoardType == 66)
             {
-                if (__instance != null)
+                if (__instance != null && (int)GameAPP.theBoardType == 66)
                 {
                     __instance.ShovelBank.SetActive(false);
                     __instance.SeedBank.SetActive(false);
@@ -362,7 +370,6 @@ namespace CrazySqualour
         }
     }
 
-    [RegisterTypeInIl2Cpp]
     public class EndoFlameSaver : MonoBehaviour
     {
         public Plant endoFlame = null;

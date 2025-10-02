@@ -1,4 +1,7 @@
-﻿using System;
+﻿// #define DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF // 启用多级词条
+
+using BepInEx.Unity.IL2CPP;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +10,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace CustomizeLib.BepInEx
 {
@@ -191,6 +195,14 @@ namespace CustomizeLib.BepInEx
         public static int GetTotalHealth(this Zombie zombie) => (int)zombie.theHealth + zombie.theFirstArmorHealth + zombie.theSecondArmorHealth;
 
         public static bool ObjectExist<T>(this Board board) => board.GameObject().transform.GetComponentsInChildren<T>().Length > 0;
+
+        /// <summary>
+        /// 将Texture2D转换为Sprite
+        /// </summary>
+        /// <param name="texture2D">Texture2D对象</param>
+        /// <returns>Sprite对象</returns>
+        public static Sprite ToSprite(this Texture2D texture2D) =>
+            Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f));
 
         public static void SwapTypeMgrExtraSkinAndBackup(PlantType plantType)
         {
@@ -720,6 +732,7 @@ namespace CustomizeLib.BepInEx
             {
                 GameObject? MyCard = null;
                 MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards/Page1/CattailGirl").gameObject;
+                #region disable
                 /*int value = 0;
                 GameObject? MyPage = null;
                 try
@@ -733,6 +746,7 @@ namespace CustomizeLib.BepInEx
                     SelectCustomPlants.GetCardGUI(ref MyPage, ref MyCard, ref value);
                 if (MyCard == null)
                     return null;*/
+                #endregion
                 return MyCard;
             }
             else if (Board.Instance is not null && Board.Instance.isIZ)
@@ -740,6 +754,7 @@ namespace CustomizeLib.BepInEx
 
                 GameObject? MyCard = null;
                 MyCard = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards/Page1/CattailGirl").gameObject;
+                #region disable
                 /*int value = 0;
                 GameObject? MyPage = null;
                 try
@@ -754,6 +769,7 @@ namespace CustomizeLib.BepInEx
                     SelectCustomPlants.GetCardGUI(ref MyPage, ref MyCard, ref value);
                 if (MyCard == null)
                     return null;*/
+                #endregion
                 return MyCard;
             }
             return null;
@@ -813,6 +829,45 @@ namespace CustomizeLib.BepInEx
             }
             return null;
         }
+
+#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
+        #region 多级词条相关方法
+        /// <summary>
+        /// 获取自定义词条等级
+        /// </summary>
+        /// <param name="buffType">词条类型</param>
+        /// <param name="returnID">注册词条时返回的ID</param>
+        /// <returns>自定义词条等级</returns>
+        public static int TravelCustomLevel(BuffType buffType, int returnID)
+        {
+            if (TravelMgr.Instance is null)
+                return 0;
+            var result = IsMultiLevelBuff(buffType, returnID);
+            foreach (var value in result.Item2)
+            {
+                int index = (int)CustomCore.variables[0] + value.Item2;
+                Il2CppStructArray<int> upgrades = TravelMgr.Instance.ultimateUpgrades;
+                return upgrades[index];
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// 自定义词条是否是多级词条
+        /// </summary>
+        /// <param name="buffType">词条类型</param>
+        /// <param name="id">对应的数组的ID（索引），即注册词条是返回的ID</param>
+        /// <returns>Item1: 是否是多级词条, Item2: 符合条件的所有词条的列表</returns>
+        public static (bool, List<(BuffType, int, int)>) IsMultiLevelBuff(BuffType buffType, int returnID)
+        {
+            var list = CustomCore.CustomBuffsLevel.
+                    Where(kvp => kvp.Key.Item1 == buffType && kvp.Key.Item3 == returnID && kvp.Value != 1).
+                    Select(kvp => kvp.Key).
+                    ToList();
+            return (list.Count > 0, list);
+        }
+    #endregion
+#endif
     }
 
     // json对象

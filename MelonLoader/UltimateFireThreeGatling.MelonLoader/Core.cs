@@ -58,7 +58,7 @@ namespace UltimateFireThreeGatling.MelonLoader
             plant.shoot = plant.gameObject.transform.FindChild("headPos2/ThreePeater_head2/ThreePeater_mouth/Shoot");
             if (Board.Instance is not null && GameAPP.theGameStatus == GameStatus.InGame)
                 for (int i = 0; i < Board.Instance.rowNum; i++)
-                    Board.Instance.CreateFireLine(i);
+                    Board.Instance.CreateFireLine(i, 1800, false, false, true, null);
         }
 
         public SuperThreeGatling plant => gameObject.GetComponent<SuperThreeGatling>();
@@ -155,7 +155,7 @@ namespace UltimateFireThreeGatling.MelonLoader
             if (__instance != null && (int)__instance.thePlantType == UltimateFireThreeGatling.PlantID)
                 if (Board.Instance is not null && GameAPP.theGameStatus == GameStatus.InGame)
                     for (int i = 0; i < Board.Instance.rowNum; i++)
-                        Board.Instance.CreateFireLine(i);
+                        Board.Instance.CreateFireLine(i, 1800, false, false, true, null);
         }
     }
 }

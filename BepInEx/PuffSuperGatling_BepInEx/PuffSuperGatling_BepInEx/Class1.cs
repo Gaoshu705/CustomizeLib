@@ -58,7 +58,18 @@ namespace PuffSuperGatling.BepInEx
         {
             if ((int)__instance.thePlantType == PuffSuperGatling.PlantID)
             {
-                __result = BulletType.Bullet_puffPea; ;
+                if (__instance.timer <= 0)
+                    __result = BulletType.Bullet_puffPea;
+                else
+                {
+                    List<BulletType> bulletTypes = new()
+                {
+                    BulletType.Bullet_puffPea,
+                    BulletType.Bullet_smallIceSpark,
+                    BulletType.Bullet_firePea_small
+                };
+                    __result = bulletTypes[UnityEngine.Random.Range(0, bulletTypes.Count)];
+                }
             }
         }
     }

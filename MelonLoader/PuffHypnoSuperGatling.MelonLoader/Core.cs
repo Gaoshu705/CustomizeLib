@@ -34,7 +34,7 @@ namespace PuffHypnoSuperGatling.MelonLoader
             );
             CustomCore.AddPlantAlmanacStrings(PuffHypnoSuperGatling.PlantID,
                 $"超级魅惑小喷菇机枪射手({PuffHypnoSuperGatling.PlantID})",
-                "一次发射六颗小魅惑豌豆，有概率一次性发射大量小魅惑豌豆\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>30*6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒散射3发小魅惑豌豆，小魅惑豌豆杀死僵尸时，召唤一个血量仅为原来50%的植物方的小魅惑豌豆射手僵尸。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+超级机枪射手+魅惑菇</color>\n\n<color=#3D1400>咕咕咕</color>"
+                "一次发射六颗小魅惑豌豆，有概率一次性发射大量小魅惑豌豆\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>30*6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒散射3发小魅惑豌豆，小魅惑豌豆杀死僵尸时，召唤一个血量仅为原来50%的植物方的小魅惑豌豆射手僵尸。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+超级机枪射手+魅惑菇</color>\n\n<color=#3D1400> “如果你魅惑了一千种僵尸，你就会发现，这个世界上，压根没有素食的僵尸，”超级魅惑机枪小喷菇扶了下眼镜“研究发现，僵尸大都是依据自身的生存本能在行动，不管在它对面的是植物还是其它僵尸，只要是挡到它的，它都会慢慢吃掉，这样的生存本能并非饥饿，而是像底层代码一样，印刻在了僵尸的意识里边，”超级魅惑机枪小喷菇继续说道“但是在他们的意识不是不是单一的，更像是一种参杂体，而我们正在做的，就是让它的另外一个意识占据身体，并服务于我们，”</color>"
             );
             CustomCore.TypeMgrExtra.IsPuff.Add((PlantType)PuffHypnoSuperGatling.PlantID);
         }
@@ -58,7 +58,7 @@ namespace PuffHypnoSuperGatling.MelonLoader
     public class Bullet_puffHypnoPea : MonoBehaviour
     {
         public static int BulletID = 1922;
-        public static int ParticleID = 1922;
+        public static int ParticleID = 800;
 
         /*public void OnTriggerEnter2D(Collider2D collision)
         {

@@ -28,11 +28,11 @@ namespace ThreePuffFireSuperGatling.BepInEx
                     (1926, (int)PlantType.ThreePeater),
                     (1927, (int)PlantType.Jalapeno)
                 },
-                1.5f, 0f, 40, 300, 0f, 1050
+                1.5f, 0f, 60, 300, 0f, 1050
             );
             CustomCore.AddPlantAlmanacStrings(ThreePuffFireSuperGatling.PlantID,
                 $"三线超级火焰机枪小喷菇({ThreePuffFireSuperGatling.PlantID})",
-                "向三行发射小火焰豌豆的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(40x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小火焰豌豆。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+火焰三线超级机枪射手</color>\n\n<color=#3D1400>咕咕嘎嘎</color>"
+                "向三行发射小火焰豌豆的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(60x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小火焰豌豆。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+火焰三线超级机枪射手</color>\n\n<color=#3D1400> “听了一千遍反方向的钟，就能回到过去么？”他们每次面对采访都会问这个问题“我们在花海跟她表白，为她准备了告白气球，还有她说自己会喜欢的青花瓷，把我们的情感是一点点积累起来的，就像晴天阳光一寸寸温暖大地，但是她向我们说了再见，一路向北，她忘记了我们蒲公英的约定，看着追来的我们只会一昧的退后，我们只能听到下雨的声音，我们说好不哭，就算雨会下一整晚，就算她在千里之外，所以我们开了这个红尘客栈，只为和她再说一句，好久不见”</color>"
             );
             CustomCore.TypeMgrExtra.IsFirePlant.Add((PlantType)ThreePuffFireSuperGatling.PlantID);
             CustomCore.TypeMgrExtra.IsPuff.Add((PlantType)ThreePuffFireSuperGatling.PlantID);

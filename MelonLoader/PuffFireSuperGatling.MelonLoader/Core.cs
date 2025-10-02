@@ -22,7 +22,8 @@ namespace PuffFireSuperGatling.MelonLoader
                 new List<(int, int)>
                 {
                     (1907, (int)PlantType.Jalapeno),
-                    ((int)PlantType.SmallPuff, 1901)
+                    ((int)PlantType.SmallPuff, 1901),
+                    (1911, (int)PlantType.Peashooter)
                 },
                 1.5f, 0f, 60, 300, 0f, 825
             );

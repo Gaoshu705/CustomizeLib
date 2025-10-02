@@ -25,13 +25,13 @@ namespace ThreePuffSuperSnowGatling.BepInEx
                     ((int)PlantType.SmallPuff, 1920),
                     (1910, (int)PlantType.ThreePeater),
                     (1927, (int)PlantType.IceShroom),
-                    ((int)PlantType.IcePuff, (int)PlantType.SuperThreeGatling)
+                    ((int)PlantType.SmallIceShroom, (int)PlantType.SuperThreeGatling)
                 },
                 1.5f, 0f, 20, 300, 0f, 1000
             );
             CustomCore.AddPlantAlmanacStrings(ThreePuffSuperSnowGatling.PlantID,
                 $"三线超级寒冰机枪小喷菇({ThreePuffSuperSnowGatling.PlantID})",
-                "向三行发射小冰锥的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(20x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小冰锥。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+三线超级寒冰机枪射手</color>\n\n<color=#3D1400>咕咕嘎嘎</color>"
+                "向三行发射小冰锥的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(20x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小冰锥。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+三线超级寒冰机枪射手</color>\n\n<color=#3D1400> “我们被雪橇车压过你压过么，我们差点死过你死过么，”三线超级寒冰机枪小喷菇晃了晃脑袋，正了正眼神继续说道，“雪橇车是没有后视镜的，冰雪是不长眼的，还是僵尸的语言是不通的，我们这么多植物打僵尸，怎么打的，还有我们把冰雪带到院子怎么带的，怎么跟其他植物沟通的，怎么去跟豌豆，坚果协调，身前，身后，雪橇车，炸弹，真枪实弹怎么去做的这些事情，这个经验是无价的”</color>"
             );
             CustomCore.TypeMgrExtra.IsIcePlant.Add((PlantType)ThreePuffSuperSnowGatling.PlantID);
             CustomCore.TypeMgrExtra.IsPuff.Add((PlantType)ThreePuffSuperSnowGatling.PlantID);

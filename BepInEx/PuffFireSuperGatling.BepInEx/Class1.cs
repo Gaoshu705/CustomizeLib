@@ -8,7 +8,7 @@ using CustomizeLib.BepInEx;
 
 namespace PuffSuperFireGatling.BepInEx
 {
-    [BepInPlugin("salmon.puffsuperfiregatling", "PuffSuperFireGatling", "1.0")]
+    [BepInPlugin("salmon.pufffiresupergatling", "PuffFireSuperGatling", "1.0")]
     public class Core : BasePlugin//304
     {
         public override void Load()
@@ -24,7 +24,8 @@ namespace PuffSuperFireGatling.BepInEx
                 new List<(int, int)>
                 {
                     (1907, (int)PlantType.Jalapeno),
-                    ((int)PlantType.SmallPuff, 1901)
+                    ((int)PlantType.SmallPuff, 1901),
+                    (1911, (int)PlantType.Peashooter)
                 },
                 1.5f, 0f, 60, 300, 0f, 825
             );

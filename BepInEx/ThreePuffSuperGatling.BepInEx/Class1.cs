@@ -30,7 +30,7 @@ namespace ThreePuffSuperGatling.BepInEx
             );
             CustomCore.AddPlantAlmanacStrings(ThreePuffSuperGatling.PlantID,
                 $"三线超级机枪小喷菇({ThreePuffSuperGatling.PlantID})",
-                "向三行发射小豌豆的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(20x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小豌豆。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+三线超级机枪射手</color>\n\n<color=#3D1400>咕咕嘎嘎</color>"
+                "向三行发射小豌豆的小超级机枪射手。\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>(20x3)x6/1.5秒</color>\n<color=#3D1400>特点：</color><color=red>每次攻击有2%概率触发大招，5秒内，每0.02秒向三行各发射1个伤害为3倍的小豌豆。</color>\n<color=#3D1400>融合配方：</color><color=red>小喷菇（底座）+三线超级机枪射手</color>\n\n<color=#3D1400>三线超级机枪小喷菇不是生来都有帽子，他们三个脑袋的占比不完全相同，所以不能像其他植物那样去批量的生产防具，他们的三个脑子实际上只有一个是主导行动和转向的，所以就算产生了分歧也是由主导的解决和调和，其实他们的目光很短，看不到太远的地方，对的，他们每次发射小豌豆，是因为看到其他植物也在攻击，他们非常内向，从来不接受采访，不喜欢和其他植物说话，总是默默的站在那里，盯着其他植物，随时准备迎战僵尸</color>"
             );
             CustomCore.TypeMgrExtra.IsPuff.Add((PlantType)ThreePuffSuperGatling.PlantID);
         }

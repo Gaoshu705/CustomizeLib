@@ -4,6 +4,8 @@ using UnityEngine;
 using Il2CppInterop.Runtime.Injection;
 using Il2Cpp;
 using CustomizeLib.MelonLoader;
+using static MelonLoader.MelonLogger;
+using Unity.VisualScripting;
 
 [assembly: MelonInfo(typeof(IceDoomSniperPea.Core), "IceDoomSniperPea", "1.0.0", "Salmon", null)]
 [assembly: MelonGame("LanPiaoPiao", "PlantsVsZombiesRH")]
@@ -18,12 +20,12 @@ namespace IceDoomSniperPea
             var ab = CustomCore.GetAssetBundle(MelonAssembly.Assembly, "icedoomsniperpea");
             CustomCore.RegisterCustomPlant<SniperPea, IceDoomSniperPea>(IceDoomSniperPea.PlantID, ab.GetAsset<GameObject>("IceDoomSniperPeaPrefab"),
                 ab.GetAsset<GameObject>("IceDoomSniperPeaPreview"), [((int)PlantType.SniperPea, (int)PlantType.IceDoom), ((int)PlantType.IceDoom, (int)PlantType.SniperPea)], 6f, 0f, 600, 300, 0, 800);
-            CustomCore.AddPlantAlmanacStrings(IceDoomSniperPea.PlantID, "冰毁狙击豌豆(" + IceDoomSniperPea.PlantID + ")", "定期狙击僵尸，造成冰毁爆炸和高额伤害\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>600/6秒</color>\n<color=#3D1400>特点：</color><color=red>特点同狙击射手，每次攻击为目标僵尸累积75点冻结值、15秒减速以及5秒冻结，每2次狙击在目标僵尸的位置释放不留坑洞不冻结关卡的寒冰毁灭菇效果，每6次狙击对目标僵尸造成21亿普通伤害</color>\n<color=#3D1400>融合配方：</color><color=red>狙击射手+寒冰毁灭菇</color>\n<color=#3D1400>词条1：</color><color=red>瞬狙：冰毁狙击的狙击间隔缩短为4秒，每次攻击有概率连狙</color>\n<color=#3D1400>词条2：</color><color=red>狙狙爆：冰毁狙击每次狙击都释放一次寒冰毁灭菇效果</color><color=#3D1400>\n词条3：</color><color=red>背起了行囊：冰毁狙击每次狙击都造成21亿伤害，该词条需要解锁词条1和词条2后才可获得</color>\n\n<color=#3D1400>“嘿，离我远点儿！”他时刻提防着要靠近他的植物和僵尸，这股力量太过强大太过危险，连自己都无法完全掌控，为此他远离其他植物，或许英雄都是孤独的.....（不合群的他有一股热枕的心，被他救下的植物甚至没有见到他，只见到了那股力量，如同神明，如同死神）</color>");
+            CustomCore.AddPlantAlmanacStrings(IceDoomSniperPea.PlantID, "冰毁狙击豌豆(" + IceDoomSniperPea.PlantID + ")", "定期狙击僵尸，造成冰毁爆炸和高额伤害\n\n<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n<color=#3D1400>伤害：</color><color=red>600/6秒</color>\n<color=#3D1400>特点：</color><color=red>特点同狙击射手，每次攻击为目标僵尸累积75点冻结值、15秒减速以及5秒冻结，每2次狙击在目标僵尸的位置释放不留坑洞不冻结关卡的寒冰毁灭菇效果，每6次狙击对目标僵尸造成21亿普通伤害</color>\n<color=#3D1400>融合配方：</color><color=red>狙击射手+寒冰毁灭菇</color>\n<color=#3D1400>词条1：</color><color=red>瞬狙：冰毁狙击的狙击间隔缩短为4秒，每次攻击有概率连狙</color>\n<color=#3D1400>词条2：</color><color=red>狙狙爆：冰毁狙击每次狙击都释放一次寒冰毁灭菇效果</color><color=#3D1400>\n词条3：</color><color=red>背起了行囊：冰毁狙击每次狙击都造成21亿伤害，2级时，每次攻击必定击败范围1格的僵尸，攻击间隔降至0.5秒，该词条需要解锁词条1和词条2后才可获得</color>\n\n<color=#3D1400>“嘿，离我远点儿！”他时刻提防着要靠近他的植物和僵尸，这股力量太过强大太过危险，连自己都无法完全掌控，为此他远离其他植物，或许英雄都是孤独的.....（不合群的他有一股热枕的心，被他救下的植物甚至没有见到他，只见到了那股力量，如同神明，如同死神）</color>");
             CustomCore.TypeMgrExtra.IsIcePlant.Add((PlantType)IceDoomSniperPea.PlantID);
-            IceDoomSniperPea.buff1 = CustomCore.RegisterCustomBuff("瞬狙：冰毁狙击的狙击间隔缩短为4秒，每次攻击有概率连狙", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#DA64FF", (PlantType)IceDoomSniperPea.PlantID);
-            IceDoomSniperPea.buff2 = CustomCore.RegisterCustomBuff("狙狙爆：冰毁狙击每次狙击都释放一次寒冰毁灭菇效果", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#DA64FF", (PlantType)IceDoomSniperPea.PlantID);
-            IceDoomSniperPea.buff3 = CustomCore.RegisterCustomBuff("背起了行囊：冰毁狙击每次狙击都造成21亿伤害", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>() && Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) && Lawnf.TravelAdvanced(IceDoomSniperPea.buff2), 15000, "#DA64FF", (PlantType)IceDoomSniperPea.PlantID);
-
+            IceDoomSniperPea.buff1 = CustomCore.RegisterCustomBuff("瞬狙：冰毁狙击的狙击间隔缩短为4秒，每次攻击有概率连狙", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID);
+            IceDoomSniperPea.buff2 = CustomCore.RegisterCustomBuff("狙狙爆：冰毁狙击每次狙击都释放一次寒冰毁灭菇效果", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID);
+            // IceDoomSniperPea.buff3 = CustomCore.RegisterCustomBuff("背起了行囊：冰毁狙击每次狙击都造成21亿伤害，2级时，每次攻击必定击败范围1格的僵尸，攻击间隔降至0.5秒。", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>() && Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) && Lawnf.TravelAdvanced(IceDoomSniperPea.buff2), 15000, 2, "#000000", (PlantType)IceDoomSniperPea.PlantID);
+            IceDoomSniperPea.buff3 = CustomCore.RegisterCustomBuff("背起了行囊：冰毁狙击每次狙击都造成21亿伤害，2级时，每次攻击必定击败范围1格的僵尸，攻击间隔降至0.5秒。", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>() && Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) && Lawnf.TravelAdvanced(IceDoomSniperPea.buff2), 15000, "#000000", (PlantType)IceDoomSniperPea.PlantID);
             CustomCore.AddFusion(IceDoomSniperPea.PlantID, 1902, (int)PlantType.DoomShroom);
             CustomCore.AddFusion(IceDoomSniperPea.PlantID, (int)PlantType.DoomShroom, 1902);
         }
@@ -97,7 +99,7 @@ namespace IceDoomSniperPea
             plant.attackCount++;
 
             int damage = plant.attackDamage;
-            if (plant.attackCount % 6 == 0 || Lawnf.TravelAdvanced(buff3))
+            if (plant.attackCount % 6 == 0/* || Utils.TravelCustomLevel(BuffType.AdvancedBuff, buff3) == 1*/)
             {
                 damage = 2147483647;
             }
@@ -106,7 +108,19 @@ namespace IceDoomSniperPea
                 GameAPP.board.GetComponent<Board>().SetDoom(0, 0, false, true, targetZombie.axis.position, 3600);
             }
 
-            AttackZombie(targetZombie, damage);
+            /*if (Utils.TravelCustomLevel(BuffType.AdvancedBuff, buff3) == 2)
+            {
+                var accurate = plant.gameObject.transform.FindChild("Accurate_Heart");
+                foreach (RaycastHit2D hit in Physics2D.RaycastAll(accurate.transform.position, Vector2.zero))
+                {
+                    if (hit.collider.gameObject.TryGetComponent<Zombie>(out var z) && z != null && !z.IsDestroyed() && !TypeMgr.IsAirZombie(z.theZombieType) && z.theStatus != ZombieStatus.Miner_digging && !z.isMindControlled)
+                    {
+                        z.Die(2);
+                    }
+                }
+            }
+            else*/
+                AttackZombie(targetZombie, damage);
 
             if (targetZombie.theStatus != ZombieStatus.Dying && !targetZombie.beforeDying)
                 return;
@@ -210,6 +224,9 @@ namespace IceDoomSniperPea
             if (__instance == null) return;
             if ((int)__instance.thePlantType == IceDoomSniperPea.PlantID)
             {
+                /*if (Utils.TravelCustomLevel(BuffType.AdvancedBuff, IceDoomSniperPea.buff3) == 2 && __instance.thePlantAttackCountDown > 0.5f)
+                    __instance.thePlantAttackCountDown = 0.5f;*/
+
                 if (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1))
                 {
                     if (__instance.thePlantAttackCountDown > 4f)
