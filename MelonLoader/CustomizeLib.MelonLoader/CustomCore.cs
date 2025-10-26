@@ -281,6 +281,7 @@ namespace CustomizeLib.MelonLoader
         /// <param name="color">词条颜色</param>
         /// <param name="plantType">选词条时展示植物的类型</param>
         /// <param name="level">词条最高等级</param>
+        /// <param name="bgType">词条背景类型</param>
         /// <returns>分到的词条id</returns>
         public static int RegisterCustomBuff(string text, BuffType buffType, Func<bool> canUnlock, int cost,
             string? color = null, PlantType plantType = PlantType.Nothing, int level = 1, TravelBuffOptionButton.BgType bgType = TravelBuffOptionButton.BgType.Day)
@@ -295,6 +296,8 @@ namespace CustomizeLib.MelonLoader
                         TravelMgr.advancedBuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 case BuffType.UltimateBuff:
@@ -304,6 +307,8 @@ namespace CustomizeLib.MelonLoader
                         TravelMgr.ultimateBuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 case BuffType.Debuff:
@@ -313,6 +318,8 @@ namespace CustomizeLib.MelonLoader
                         TravelMgr.debuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 default:
@@ -919,6 +926,9 @@ namespace CustomizeLib.MelonLoader
         /// <param name="action">移动逻辑</param>
         public static void RegisterCustomBulletMovingWay(int id, Action<Bullet> action) => CustomBulletMovingWay.Add(id, action);
 
+        public static void RegisterCustomEndlessSave(Func<Plant, bool> objectFunc, Func<MemberInfo, bool> memberFunc) =>
+            CustomEndlessSave.Add(objectFunc, memberFunc);
+
         public override void OnLateInitializeMelon()
         {
             GameObject ccore = new("CustomizeLib by Infinite75");
@@ -1079,6 +1089,13 @@ namespace CustomizeLib.MelonLoader
         /// 换贴图协程对象
         /// </summary>
         public object? ReplaceTextureRoutine { get; set; } = null;
+
+        /// <summary>
+        /// 自定义词条背景
+        /// </summary>
+        public static Dictionary<(BuffType, int), TravelBuffOptionButton.BgType> CustomBuffsBg { get; set; } = [];
+
+        public static Dictionary<Func<Plant, bool>, Func<MemberInfo, bool>> CustomEndlessSave { get; set; } = [];
 
         /// <summary>
         /// 存卡片检查的列表，用于管理Packet显示，你不应该使用它

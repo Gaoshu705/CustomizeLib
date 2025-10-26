@@ -305,9 +305,10 @@ namespace CustomizeLib.BepInEx
         /// <param name="color">词条颜色</param>
         /// <param name="plantType">选词条时展示植物的类型</param>
         /// <param name="level">词条最高等级</param>
+        /// <param name="bgType">词条背景类型</param>
         /// <returns>分到的词条id</returns>
         public static int RegisterCustomBuff(string text, BuffType buffType, Func<bool> canUnlock, int cost,
-            string? color = null, PlantType plantType = PlantType.Nothing, int level = 1)
+            string? color = null, PlantType plantType = PlantType.Nothing, int level = 1, TravelBuffOptionButton.BgType bgType = TravelBuffOptionButton.BgType.Day)
         {
             //if (color is not null) text = $"<color={color}>{text}</color>";
             switch (buffType)
@@ -319,6 +320,8 @@ namespace CustomizeLib.BepInEx
                         TravelMgr.advancedBuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 case BuffType.UltimateBuff:
@@ -328,6 +331,8 @@ namespace CustomizeLib.BepInEx
                         TravelMgr.ultimateBuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 case BuffType.Debuff:
@@ -337,6 +342,8 @@ namespace CustomizeLib.BepInEx
                         TravelMgr.debuffs.Add(i, text);
                         if (level != 1)
                             CustomBuffsLevel.Add((buffType, i), (CustomBuffsLevel.Count, level));
+                        if (!CustomBuffsBg.ContainsKey((buffType, i)))
+                            CustomBuffsBg.Add((buffType, i), bgType);
                         return i;
                     }
                 default:
@@ -1056,6 +1063,11 @@ namespace CustomizeLib.BepInEx
         /// 自定义究极植物列表
         /// </summary>
         public static List<PlantType> CustomUltimatePlants { get; set; } = [];
+
+        /// <summary>
+        /// 自定义词条背景
+        /// </summary>
+        public static Dictionary<(BuffType, int), TravelBuffOptionButton.BgType> CustomBuffsBg { get; set; } = [];
 
         /// <summary>
         /// 存卡片检查的列表，用于管理Packet显示，你不应该使用它

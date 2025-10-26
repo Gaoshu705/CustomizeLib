@@ -1710,6 +1710,10 @@ namespace CustomizeLib.MelonLoader
             {
                 __instance.introduce.text = $"<color={CustomCore.CustomAdvancedBuffs[buffIndex].Item5}>{__instance.introduce.text}</color>";
             }
+
+            if (CustomCore.CustomBuffsBg.ContainsKey((buffType, buffIndex)))
+                __instance.SetBackground(CustomCore.CustomBuffsBg[(buffType, buffIndex)]);
+
             var result = Utils.IsMultiLevelBuff(__instance.buffType, __instance.buffIndex);
             try
             {
@@ -2992,7 +2996,7 @@ namespace CustomizeLib.MelonLoader
     }
 
     [HarmonyPatch(typeof(SaveInfo))]
-    public static class SaveInfoPatch
+    public static class SaveInfoPatch_0
     {
         [HarmonyPatch(nameof(SaveInfo.SaveSurvivalData), new Type[] { typeof(int), typeof(bool), typeof(int) })]
         [HarmonyPostfix]
@@ -3007,7 +3011,7 @@ namespace CustomizeLib.MelonLoader
                 TravelMgr.Instance.SetData("CustomBuffsLevel", array);
                 return;
             }
-            if (array == new int[CustomCore.CustomBuffsLevel.Count])
+            if (array.SequenceEqual(new int[CustomCore.CustomBuffsLevel.Count]))
                 return;
             String json = JsonSerializer.Serialize(array);
             String originalPath = __instance.GetPath(level, id);
