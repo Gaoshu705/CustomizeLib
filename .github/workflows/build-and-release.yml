@@ -12,28 +12,69 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        
+
     - name: Restore dependencies
       run: dotnet restore PVZRHCustomization.sln
-      
+
     - name: Build solution
-      run: dotnet build PVZRHCustomization.sln --configuration Release --no-restore
-      
+      run: dotnet build PVZRHCustomization.sln --configuration Release --no-restore -p:PostBuildEvent=
+
     - name: Create output directories
+      shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path ./output/bepinex
         New-Item -ItemType Directory -Force -Path ./output/melonloader
-        
-    - name: Copy BepInEx DLLs
+        New-Item -ItemType Directory -Force -Path ./res/BepInEx
+        New-Item -ItemType Directory -Force -Path ./res/MelonLoader/Mods
+
+    - name: Collect BepInEx DLLs from build output
+      shell: pwsh
+      run: |
+        Write-Host "Searching for BepInEx DLLs..."
+        $found = 0
+        Get-ChildItem -Path ./BepInEx -Recurse -Filter *.dll -ErrorAction SilentlyContinue | Where-Object {
+          $_.Directory.Name -eq "Release" -and $_.Directory.Parent.Name -like "net*"
+        } | ForEach-Object {
+          $destPath = "./res/BepInEx/$($_.Name)"
+          Copy-Item -Path $_.FullName -Destination $destPath -Force
+          Write-Host "Copied: $($_.Name) from $($_.FullName)"
+          $found++
+        }
+        Write-Host "Total BepInEx DLLs copied: $found"
+
+    - name: Collect MelonLoader DLLs from build output
+      shell: pwsh
+      run: |
+        Write-Host "Searching for MelonLoader DLLs..."
+        $found = 0
+        Get-ChildItem -Path ./MelonLoader -Recurse -Filter *.dll -ErrorAction SilentlyContinue | Where-Object {
+          $_.Directory.Name -eq "Release" -and $_.Directory.Parent.Name -like "net*"
+        } | ForEach-Object {
+          $destPath = "./res/MelonLoader/Mods/$($_.Name)"
+          Copy-Item -Path $_.FullName -Destination $destPath -Force
+          Write-Host "Copied: $($_.Name) from $($_.FullName)"
+          $found++
+        }
+        Write-Host "Total MelonLoader DLLs copied: $found"
+
+    - name: List collected DLLs
+      shell: pwsh
+      run: |
+        Write-Host "=== BepInEx DLLs ==="
+        Get-ChildItem -Path ./res/BepInEx -Filter *.dll | ForEach-Object { Write-Host $_.Name }
+        Write-Host "`n=== MelonLoader DLLs ==="
+        Get-ChildItem -Path ./res/MelonLoader/Mods -Filter *.dll | ForEach-Object { Write-Host $_.Name }
+
+    - name: Create individual BepInEx zip packages
       shell: pwsh
       run: |
         $dlls = Get-ChildItem -Path ./res/BepInEx -Filter *.dll
@@ -43,8 +84,8 @@ jobs:
           Compress-Archive -Path $dll.FullName -DestinationPath $zipPath -Force
           Write-Host "Created: $zipPath"
         }
-        
-    - name: Copy MelonLoader DLLs
+
+    - name: Create individual MelonLoader zip packages
       shell: pwsh
       run: |
         $dlls = Get-ChildItem -Path ./res/MelonLoader/Mods -Filter *.dll
@@ -54,41 +95,54 @@ jobs:
           Compress-Archive -Path $dll.FullName -DestinationPath $zipPath -Force
           Write-Host "Created: $zipPath"
         }
-        
+
     - name: Create combined release packages
       shell: pwsh
       run: |
-        Compress-Archive -Path ./res/BepInEx/*.dll -DestinationPath ./output/BepInEx-All.zip -Force
-        Compress-Archive -Path ./res/MelonLoader/Mods/*.dll -DestinationPath ./output/MelonLoader-All.zip -Force
-        
+        $bepinexDlls = Get-ChildItem -Path ./res/BepInEx -Filter *.dll
+        if ($bepinexDlls.Count -gt 0) {
+          Compress-Archive -Path ./res/BepInEx/*.dll -DestinationPath ./output/BepInEx-All.zip -Force
+          Write-Host "Created: BepInEx-All.zip"
+        }
+        $melonDlls = Get-ChildItem -Path ./res/MelonLoader/Mods -Filter *.dll
+        if ($melonDlls.Count -gt 0) {
+          Compress-Archive -Path ./res/MelonLoader/Mods/*.dll -DestinationPath ./output/MelonLoader-All.zip -Force
+          Write-Host "Created: MelonLoader-All.zip"
+        }
+
     - name: Generate release notes
-      id: release_notes
       shell: pwsh
       run: |
         $version = "${{ github.ref_name }}" -replace 'v', ''
         $notes = "## Release $version`n`n"
         $notes += "### BepInEx Plugins`n`n"
-        $bepinex = Get-ChildItem -Path ./output/bepinex -Filter *.dll.zip
+        $bepinex = Get-ChildItem -Path ./output/bepinex -Filter *.dll.zip -ErrorAction SilentlyContinue
         foreach ($item in $bepinex) {
           $notes += "- $([System.IO.Path]::GetFileNameWithoutExtension($item.Name))`n"
         }
         $notes += "`n### MelonLoader Plugins`n`n"
-        $melonloader = Get-ChildItem -Path ./output/melonloader -Filter *.dll.zip
+        $melonloader = Get-ChildItem -Path ./output/melonloader -Filter *.dll.zip -ErrorAction SilentlyContinue
         foreach ($item in $melonloader) {
           $notes += "- $([System.IO.Path]::GetFileNameWithoutExtension($item.Name))`n"
         }
         $notes += "`n---`n`n"
         $notes += "### Complete Packages`n`n"
-        $notes += "- [BepInEx-All.zip](./BepInEx-All.zip) - All BepInEx plugins in one package`n"
-        $notes += "- [MelonLoader-All.zip](./MelonLoader-All.zip) - All MelonLoader plugins in one package`n"
+        if (Test-Path ./output/BepInEx-All.zip) {
+          $notes += "- [BepInEx-All.zip](./BepInEx-All.zip) - All BepInEx plugins in one package`n"
+        }
+        if (Test-Path ./output/MelonLoader-All.zip) {
+          $notes += "- [MelonLoader-All.zip](./MelonLoader-All.zip) - All MelonLoader plugins in one package`n"
+        }
         $notes | Out-File -FilePath ./release_notes.md -Encoding UTF8
-        
+        Write-Host "Release notes generated:"
+        Get-Content ./release_notes.md
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: release-packages
         path: ./output
-        
+
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1

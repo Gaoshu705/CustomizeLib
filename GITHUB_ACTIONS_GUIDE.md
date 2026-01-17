@@ -81,10 +81,11 @@ Get-ChildItem -Path ./res/MelonLoader/Mods -Filter *.dll
 
 ## 注意事项
 
-1. **确保 res 目录存在** - workflow 假设编译后的 DLL 位于 `./res/BepInEx` 和 `./res/MelonLoader/Mods` 目录
-2. **解决方案路径** - 确保主解决方案文件名为 `PVZRHCustomization.sln`
-3. **.NET 版本** - 当前配置使用 .NET 8.0，如需修改请更新 workflow 中的 `DOTNET_VERSION` 环境变量
-4. **GITHUB_TOKEN** - workflow 自动使用 GitHub 提供的 `GITHUB_TOKEN`，无需额外配置
+1. **禁用 PostBuild 事件** - workflow 会自动禁用项目文件中的 PostBuild 事件，避免硬编码的本地路径导致构建失败
+2. **自动收集 DLL** - workflow 会从编译输出目录自动收集 DLL 文件，不依赖 PostBuild 事件
+3. **解决方案路径** - 确保主解决方案文件名为 `PVZRHCustomization.sln`
+4. **.NET 版本** - 当前配置使用 .NET 8.0，如需修改请更新 workflow 中的 `DOTNET_VERSION` 环境变量
+5. **GITHUB_TOKEN** - workflow 自动使用 GitHub 提供的 `GITHUB_TOKEN`，无需额外配置
 
 ## 自定义配置
 
@@ -126,11 +127,22 @@ env:
 dotnet build PVZRHCustomization.sln --configuration Release
 ```
 
+### PostBuild 事件错误
+
+如果遇到类似以下的错误：
+
+```
+error MSB3073: The command "COPY "..." "F:\..." exited with code 1.
+```
+
+这是因为项目文件中包含硬编码的本地路径。workflow 会自动通过 `-p:PostBuildEvent=` 参数禁用 PostBuild 事件，并从编译输出目录自动收集 DLL 文件。
+
 ### DLL 未找到
 
-确保编译后的 DLL 位于正确的目录：
-- BepInEx: `./res/BepInEx/*.dll`
-- MelonLoader: `./res/MelonLoader/Mods/*.dll`
+确保：
+- BepInEx 项目编译输出到 `./BepInEx/*/bin/Release/net*/` 目录
+- MelonLoader 项目编译输出到 `./MelonLoader/*/bin/Release/net*/` 目录
+- workflow 会自动搜索这些目录并收集 DLL 文件
 
 ### Release 创建失败
 
