@@ -1,0 +1,105 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore PVZRHCustomization.sln
+      
+    - name: Build solution
+      run: dotnet build PVZRHCustomization.sln --configuration Release --no-restore
+      
+    - name: Create output directories
+      run: |
+        New-Item -ItemType Directory -Force -Path ./output/bepinex
+        New-Item -ItemType Directory -Force -Path ./output/melonloader
+        
+    - name: Copy BepInEx DLLs
+      shell: pwsh
+      run: |
+        $dlls = Get-ChildItem -Path ./res/BepInEx -Filter *.dll
+        foreach ($dll in $dlls) {
+          $name = $dll.BaseName
+          $zipPath = "./output/bepinex/$name.zip"
+          Compress-Archive -Path $dll.FullName -DestinationPath $zipPath -Force
+          Write-Host "Created: $zipPath"
+        }
+        
+    - name: Copy MelonLoader DLLs
+      shell: pwsh
+      run: |
+        $dlls = Get-ChildItem -Path ./res/MelonLoader/Mods -Filter *.dll
+        foreach ($dll in $dlls) {
+          $name = $dll.BaseName
+          $zipPath = "./output/melonloader/$name.zip"
+          Compress-Archive -Path $dll.FullName -DestinationPath $zipPath -Force
+          Write-Host "Created: $zipPath"
+        }
+        
+    - name: Create combined release packages
+      shell: pwsh
+      run: |
+        Compress-Archive -Path ./res/BepInEx/*.dll -DestinationPath ./output/BepInEx-All.zip -Force
+        Compress-Archive -Path ./res/MelonLoader/Mods/*.dll -DestinationPath ./output/MelonLoader-All.zip -Force
+        
+    - name: Generate release notes
+      id: release_notes
+      shell: pwsh
+      run: |
+        $version = "${{ github.ref_name }}" -replace 'v', ''
+        $notes = "## Release $version`n`n"
+        $notes += "### BepInEx Plugins`n`n"
+        $bepinex = Get-ChildItem -Path ./output/bepinex -Filter *.dll.zip
+        foreach ($item in $bepinex) {
+          $notes += "- $([System.IO.Path]::GetFileNameWithoutExtension($item.Name))`n"
+        }
+        $notes += "`n### MelonLoader Plugins`n`n"
+        $melonloader = Get-ChildItem -Path ./output/melonloader -Filter *.dll.zip
+        foreach ($item in $melonloader) {
+          $notes += "- $([System.IO.Path]::GetFileNameWithoutExtension($item.Name))`n"
+        }
+        $notes += "`n---`n`n"
+        $notes += "### Complete Packages`n`n"
+        $notes += "- [BepInEx-All.zip](./BepInEx-All.zip) - All BepInEx plugins in one package`n"
+        $notes += "- [MelonLoader-All.zip](./MelonLoader-All.zip) - All MelonLoader plugins in one package`n"
+        $notes | Out-File -FilePath ./release_notes.md -Encoding UTF8
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-packages
+        path: ./output
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./output/bepinex/*.zip
+          ./output/melonloader/*.zip
+          ./output/BepInEx-All.zip
+          ./output/MelonLoader-All.zip
+        body_path: ./release_notes.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
