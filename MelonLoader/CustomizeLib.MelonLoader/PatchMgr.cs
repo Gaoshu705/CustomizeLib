@@ -772,6 +772,22 @@ namespace CustomizeLib.MelonLoader
         }
     }
 
+    [HarmonyPatch(typeof(InGameText), nameof(InGameText.ShowText))]
+    public static class InGameTextPatch
+    {
+        public static bool disable = false;
+        [HarmonyPrefix]
+        public static bool Prefix(string text, float time)
+        {
+            if (text == "通关挑战模式解锁配方" && time == 7f && disable)
+            {
+                disable = false;
+                return false;
+            }
+            return true;
+        }
+    }
+
     /// <summary>
     /// 为二创植物附加植物特性
     /// </summary>
@@ -789,6 +805,26 @@ namespace CustomizeLib.MelonLoader
             }
         }
 
+        [HarmonyPatch(nameof(CreatePlant.Lim))]
+        [HarmonyPostfix]
+        public static void PostLim(CreatePlant __instance, ref PlantType theSeedType, ref bool __result)
+        {
+            // 自定义条件
+            {
+                if (CustomCore.CustomFailMix.ContainsKey(theSeedType) && CustomCore.CustomFailMix[theSeedType].Item1 != null)
+                {
+                    if (CustomCore.CustomFailMix[theSeedType].Item1.Invoke())
+                        CustomCore.CustomFailMix[theSeedType].Item2?.Invoke();
+                    else
+                    {
+                        __result = true;
+                        InGameTextPatch.disable = true;
+                        CustomCore.CustomFailMix[theSeedType].Item3?.Invoke();
+                    }
+                }
+            }
+        }
+
         [HarmonyPatch(nameof(CreatePlant.LimTravel))]
         [HarmonyPostfix]
         public static void Postfix_LimTravel(CreatePlant __instance, ref PlantType theSeedType, ref bool __result)
@@ -798,7 +834,7 @@ namespace CustomizeLib.MelonLoader
                 bool isCanSet = false;
                 if (TravelMgr.Instance != null && TravelMgr.Instance.ulockTemp.Contains(theSeedType))
                     isCanSet = true;
-                if (__instance.board.boardTag.enableAllTravelPlant || __instance.board.boardTag.enableTravelPlant || __instance.board.boardTag.isTravel)
+                if (__instance.board.boardTag.enableAllTravelPlant || __instance.board.boardTag.enableTravelPlant || __instance.board.boardTag.isTravel || __instance.board.boardTag.isSuperRandom || __instance.board.boardTag.isUltimateSuperRandom)
                     isCanSet = true;
 
                 if (CustomCore.CustomUltimatePlants.Contains(theSeedType) && !isCanSet)
@@ -827,8 +863,8 @@ namespace CustomizeLib.MelonLoader
                             else
                             {
                                 var mgr = TravelMgr.Instance;
-                                if (!(__instance.board.boardTag.isTravel && ((mgr.ulockTemp != null && mgr.ulockTemp.Contains(theSeedType)) || 
-                                    (mgr.weakUltimates != null && mgr.weakUltimates.Contains(theSeedType))) && !__instance.board.boardTag.enableAllTravelPlant))
+                                if (!(__instance.board.boardTag.isTravel && mgr.ulockTemp != null && mgr.ulockTemp.Contains(theSeedType) || 
+                                    (mgr.weakUltimates != null && mgr.weakUltimates.Contains(theSeedType))) && !__instance.board.boardTag.enableAllTravelPlant)
                                 {
                                     __result = true;
                                     InGameText.Instance.ShowText("未选取此植物", 3f);
@@ -1109,81 +1145,65 @@ namespace CustomizeLib.MelonLoader
         }
     }
 
-    /// <summary>
-    /// 资源加载
-    /// </summary>
-    [HarmonyPatch(typeof(NoticeMenu), nameof(NoticeMenu.Start))]
-    public static class NoticeMenuPatch
+    [HarmonyPatch(typeof(GameAPP), nameof(GameAPP.LoadResources))]
+    public static class GameAPPPatch
     {
-        [HarmonyPostfix]
-        public static void Postfix()
+        [HarmonyPrefix]
+        public static void Prefix()
         {
             #region 自动扩容
             // 扩容plantData
-            if (CustomCore.CustomPlants.Count > 0)
+            if (CustomCore.CustomPlants.Count > 0 && (int)CustomCore.CustomPlants.Keys.Max() + 1 >= PlantDataLoader.plantData.Length)
             {
-                long size_plantData = (int)CustomCore.CustomPlants.Keys.Max() < PlantDataLoader.plantData.Length ? PlantDataLoader.plantData.Length : (int)CustomCore.CustomPlants.Keys.Max();
+                long size_plantData = (int)CustomCore.CustomPlants.Keys.Max();
                 Il2CppReferenceArray<PlantDataLoader.PlantData_> plantData = new Il2CppReferenceArray<PlantDataLoader.PlantData_>(size_plantData + 1);
-                Il2CppSystem.Array.Copy(PlantDataLoader.plantData.Cast<Il2CppSystem.Array>(), plantData.Cast<Il2CppSystem.Array>(), PlantDataLoader.plantData.Length);
                 PlantDataLoader.plantData = plantData;
             }
 
             // 扩容particlePrefab
-            if (CustomCore.CustomParticles.Count > 0)
+            if (CustomCore.CustomParticles.Count > 0 && (int)CustomCore.CustomParticles.Keys.Max() + 1 >= GameAPP.particlePrefab.Length)
             {
-                long size_particlePrefab = (int)CustomCore.CustomParticles.Keys.Max() < GameAPP.particlePrefab.Length ? GameAPP.particlePrefab.Length : (int)CustomCore.CustomParticles.Keys.Max();
+                long size_particlePrefab = (int)CustomCore.CustomParticles.Keys.Max();
                 Il2CppReferenceArray<GameObject> particlePrefab = new Il2CppReferenceArray<GameObject>(size_particlePrefab + 1);
-                Il2CppSystem.Array.Copy(GameAPP.particlePrefab.Cast<Il2CppSystem.Array>(), particlePrefab.Cast<Il2CppSystem.Array>(), GameAPP.particlePrefab.Length);
                 GameAPP.particlePrefab = particlePrefab;
             }
 
             // 扩容spritePrefab
-            if (CustomCore.CustomSprites.Count > 0)
+            if (CustomCore.CustomSprites.Count > 0 && CustomCore.CustomSprites.Keys.Max() + 1 >= GameAPP.spritePrefab.Length)
             {
-                long size_spritePrefab = CustomCore.CustomSprites.Keys.Max() < GameAPP.spritePrefab.Length ? GameAPP.spritePrefab.Length : CustomCore.CustomSprites.Keys.Max();
+                long size_spritePrefab = CustomCore.CustomSprites.Keys.Max();
                 Il2CppReferenceArray<Sprite> spritePrefab = new Il2CppReferenceArray<Sprite>(size_spritePrefab + 1);
-                Il2CppSystem.Array.Copy(GameAPP.spritePrefab.Cast<Il2CppSystem.Array>(), spritePrefab.Cast<Il2CppSystem.Array>(), GameAPP.spritePrefab.Length);
                 GameAPP.spritePrefab = spritePrefab;
             }
 
             // 扩容data融合数组
-            if (CustomCore.CustomPlants.Count > 0)
+            if (CustomCore.CustomPlants.Count > 0 && ((long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.data.Cast<Il2CppSystem.Array>().GetLongLength(0) || (long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.data.Cast<Il2CppSystem.Array>().GetLongLength(1)))
             {
                 var arr = MixData.data.Cast<Il2CppSystem.Array>();
-                long max = (int)CustomCore.CustomPlants.Keys.Max() + 1;
-                var length_0 = arr.GetLength(0) < max ? max : arr.GetLength(0);
-                var length_1 = arr.GetLength(1) < max ? max : arr.GetLength(1);
-                var length = length_0 < length_1 ? length_1 : length_0;
+                long max = (long)CustomCore.CustomPlants.Keys.Max() + 1;
                 var type = arr.GetValue(0, 0).GetIl2CppType();
-                var result = Il2CppSystem.Array.CreateInstance(type, length, length);
-                Il2CppSystem.Array.Copy(arr, result, arr.Length);
+                var result = Il2CppSystem.Array.CreateInstance(type, max, max);
                 MixData.data = result;
             }
 
             // 扩容disMixDatas拆分数组
-            if (CustomCore.CustomPlants.Count > 0)
+            if (CustomCore.CustomPlants.Count > 0 && (int)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.disMixDatas.Length)
             {
-                long size_disMixDatas = (int)CustomCore.CustomPlants.Keys.Max() < MixData.disMixDatas.Length ? MixData.disMixDatas.Length : (int)CustomCore.CustomPlants.Keys.Max();
+                long size_disMixDatas = (int)CustomCore.CustomPlants.Keys.Max();
                 Il2CppReferenceArray<MixData.DisMixData> disMixDatas = new Il2CppReferenceArray<MixData.DisMixData>(size_disMixDatas + 1);
-                Il2CppSystem.Array.Copy(MixData.disMixDatas.Cast<Il2CppSystem.Array>(), disMixDatas.Cast<Il2CppSystem.Array>(), MixData.disMixDatas.Length);
                 MixData.disMixDatas = disMixDatas;
             }
 
             // 扩容randomData随机融合数组
-            if (CustomCore.CustomPlants.Count > 0)
+            if (CustomCore.CustomPlants.Count > 0 && ((long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.randomData.Cast<Il2CppSystem.Array>().GetLongLength(0) || (long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.randomData.Cast<Il2CppSystem.Array>().GetLongLength(1)))
             {
                 var arr = MixData.randomData.Cast<Il2CppSystem.Array>();
                 long max = (int)CustomCore.CustomPlants.Keys.Max() + 1;
-                var length_0 = arr.GetLength(0) < max ? max : arr.GetLength(0);
-                var length_1 = arr.GetLength(1) < max ? max : arr.GetLength(1);
-                var length = length_0 < length_1 ? length_1 : length_0;
                 var type = arr.GetValue(0, 0).GetIl2CppType();
-                var result = Il2CppSystem.Array.CreateInstance(type, length, length);
-                Il2CppSystem.Array.Copy(arr, result, arr.Length);
+                var result = Il2CppSystem.Array.CreateInstance(type, max, max);
                 MixData.randomData = result;
             }
             #endregion
-
             foreach (var plant in CustomCore.CustomPlants)//二创植物
             {
                 GameAPP.resourcesManager.plantPrefabs[plant.Key] = plant.Value.Prefab;//注册预制体
@@ -1231,7 +1251,18 @@ namespace CustomizeLib.MelonLoader
             {
                 GameAPP.spritePrefab[spr.Key] = spr.Value;
             }
+        }
+    }
 
+    /// <summary>
+    /// 资源加载
+    /// </summary>
+    [HarmonyPatch(typeof(NoticeMenu), nameof(NoticeMenu.Start))]
+    public static class NoticeMenuPatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
             // 注册红卡
             {
                 var propertyInfo = typeof(TypeMgr).GetProperty("RedPlant", BindingFlags.Static | BindingFlags.Public);
@@ -1260,6 +1291,7 @@ namespace CustomizeLib.MelonLoader
                     uncrashablePlants.Add(item);
                 propertyInfo.SetValue(null, uncrashablePlants);
             }
+
             #region 注册皮肤
             foreach (var item in CustomCore.CustomPlantsSkin)
             {
@@ -1297,13 +1329,14 @@ namespace CustomizeLib.MelonLoader
                                 GameAPP.resourcesManager._plantPreviews.Add(plantType, list);
                             }
                         }
+                        CustomCore.CustomPlantsSkinActive[plantType] = true;
                     }
                 }
             }
             String? fullName = Directory.GetParent(Application.dataPath)?.FullName;
             if (fullName != null)
             {
-                string skinPath = Path.Combine(fullName, MelonEnvironment.ModsDirectory, "Skin");
+                string skinPath = Path.Combine(MelonEnvironment.ModsDirectory, "Skin");
                 if (Directory.Exists(skinPath))
                 {
                     var regex = new Regex(@"^skin_(\d+)(?!\d).*$", RegexOptions.IgnoreCase);
@@ -1313,6 +1346,7 @@ namespace CustomizeLib.MelonLoader
                         if (match.Success && int.TryParse(match.Groups[1].Value, out int id))
                         {
                             var plantType = (PlantType)id;
+                            if (CustomCore.CustomPlantsSkinActive.ContainsKey(plantType) && CustomCore.CustomPlantsSkinActive[plantType]) continue;
                             var ab = AssetBundle.LoadFromFile(path);
                             GameObject? prefab = null;
                             GameObject? preview = null;
@@ -1436,6 +1470,12 @@ namespace CustomizeLib.MelonLoader
                 }
             }
             #endregion
+
+            if (ElementUpgrade._upgradeCache != null)
+            {
+                ElementUpgrade._upgradeCache = null;
+                ElementUpgrade.InitializeUpgradeCache();
+            }
         }
     }
 
@@ -1801,7 +1841,7 @@ namespace CustomizeLib.MelonLoader
             if (list.Count <= 0)
                 return true;
             bool found = false;
-            bool clear = true;
+            bool clear = false;
             var array = MixData.data.Cast<Il2CppSystem.Array>();
             List<Action<Plant>> executedActions = [];
             foreach (var item in list)
@@ -1812,17 +1852,30 @@ namespace CustomizeLib.MelonLoader
                     continue;
                 if (CustomCore.CustomClickCardOnPlantEvents.ContainsKey((item.thePlantType, __instance.thePlantTypeOnMouse)))
                 {
-                    foreach (var action in CustomCore.CustomClickCardOnPlantEvents[(item.thePlantType, __instance.thePlantTypeOnMouse)])
+                    bool block = false, clearOrigin = true;
+                    foreach (var (action, onPlant) in CustomCore.CustomClickCardOnPlantEvents[(item.thePlantType, __instance.thePlantTypeOnMouse)])
                     {
                         if (executedActions.Contains(action)) // 判断，不然会多执行一次
                             continue;
+                        if (onPlant.Trigger == CustomClickCardOnPlant.TriggerType.CardOnly && __instance.thePlantOnGlove != null)
+                            continue;
+                        if (onPlant.Trigger == CustomClickCardOnPlant.TriggerType.GloveOnly && __instance.thePlantOnGlove == null)
+                            continue;
                         action(item);
                         executedActions.Add(action);
+                        if (onPlant.BlockFusion)
+                            block = true;
+                        if (!onPlant.ClearOrigin)
+                            clearOrigin = false;
+                        found = true;
                     }
-                    found = true;
-                    if ((array.GetValue((int)item.thePlantType, (int)__instance.thePlantTypeOnMouse).Unbox<int>()) != 0)
+                    if (block)
                     {
-                        clear = false;
+                        return false;
+                    }
+                    if (clearOrigin)
+                    {
+                        clear = true;
                     }
                 }
             }
@@ -1884,6 +1937,17 @@ namespace CustomizeLib.MelonLoader
             {
                 CustomCore.CustomUseItems[(__instance.thePlantType, type)](__instance);
                 UnityEngine.Object.Destroy(bucket.gameObject);
+            }
+        }
+
+        [HarmonyPatch(nameof(Plant.Start))]
+        [HarmonyPostfix]
+        public static void PostStart(Plant __instance)
+        {
+            if (__instance != null && CustomCore.CustomOnMixEvent.ContainsKey((__instance.firstParent, __instance.secondParent)))
+            {
+                foreach (var action in CustomCore.CustomOnMixEvent[(__instance.firstParent, __instance.secondParent)])
+                    action.Invoke(__instance);
             }
         }
     }
@@ -2102,10 +2166,14 @@ namespace CustomizeLib.MelonLoader
                     if (!result.Item1)
                         continue;
                     int index = result.Item2;
+                    if (index >= array.Length)
+                        continue;
                     switch (key.Item1)
                     {
                         case BuffType.AdvancedBuff:
                             {
+                                if (index >= TravelMgr.Instance.advancedUpgrades.Count)
+                                    break;
                                 if (!TravelMgr.Instance.advancedUpgrades[key.Item2])
                                     array[index] = 0;
                                 if (array[index] <= 0 && TravelMgr.Instance.advancedUpgrades[key.Item2])
@@ -2114,6 +2182,8 @@ namespace CustomizeLib.MelonLoader
                             break;
                         case BuffType.UltimateBuff:
                             {
+                                if (index >= TravelMgr.Instance.ultimateUpgrades.Count)
+                                    break;
                                 if (TravelMgr.Instance.ultimateUpgrades[key.Item2] <= 0)
                                     array[index] = 0;
                                 if (array[index] <= 0 && TravelMgr.Instance.ultimateUpgrades[key.Item2] >= 1)
@@ -2122,9 +2192,21 @@ namespace CustomizeLib.MelonLoader
                             break;
                         case BuffType.Debuff:
                             {
+                                if (index >= TravelMgr.Instance.debuff.Count)
+                                    break;
                                 if (!TravelMgr.Instance.debuff[key.Item2])
                                     array[index] = 0;
                                 if (array[index] <= 0 && TravelMgr.Instance.debuff[key.Item2])
+                                    array[index] = 1;
+                            }
+                            break;
+                        case BuffType.UnlockPlant:
+                            {
+                                if (index >= TravelMgr.Instance.unlockPlant.Count)
+                                    break;
+                                if (!TravelMgr.Instance.unlockPlant[key.Item2])
+                                    array[index] = 0;
+                                if (array[index] <= 0 && TravelMgr.Instance.unlockPlant[key.Item2])
                                     array[index] = 1;
                             }
                             break;
@@ -2620,11 +2702,11 @@ namespace CustomizeLib.MelonLoader
             #endregion
 #endif
 
-            foreach (PlantType plantType in CustomCore.CustomUltimatePlants) // 注册强究植物
-            {
-                if (!TravelMgr.allStrongUltimtePlant.Contains(plantType))
-                    TravelMgr.allStrongUltimtePlant.Add(plantType);
-            }
+            //foreach (PlantType plantType in CustomCore.CustomUltimatePlants) // 注册强究植物
+            //{
+            //    if (!TravelMgr.allStrongUltimtePlant.Contains(plantType))
+            //        TravelMgr.allStrongUltimtePlant.Add(plantType);
+            //}
         }
 
         [HarmonyPatch(nameof(TravelMgr.Start))]
@@ -2718,82 +2800,24 @@ namespace CustomizeLib.MelonLoader
 #endif
     }
 
-
-    /*[HarmonyPatch(typeof(TravelLookMenu))]
-    public static class TravelLookMenuPatch
+    [HarmonyPatch(typeof(TravelBuffMenu))]
+    public static class TravelBuffMenuPatch
     {
-        [HarmonyPatch(nameof(TravelLookMenu.GetAdvBuffs))]
+        [HarmonyPatch(nameof(TravelBuffMenu.RefeshOptions))]
         [HarmonyPostfix]
-        public static void PostGetAdvBuffs(ref Il2CppSystem.Collections.Generic.List<int> __result)
+        public static void PostRefreshOptions(TravelBuffMenu __instance, ref bool refresh)
         {
-            if (!(CustomCore.CustomAdvancedBuffs.Count > 0))
-                return;
-            if (CustomCore.BuffArrayCount.Item1 < 0)
-                return;
-            for (int i = __result.Count - 1; i >= CustomCore.BuffArrayCount.Item1; i--)
+            int start = -1, end = -1;
+            for (int i = 0; i < __instance.options.Count; i++)
             {
-                if (!CustomCore.CustomAdvancedBuffs.ContainsKey(i) && i < __result.Count && i >= 0)
-                {
-                    __result.RemoveAt(i);
-                }
+                
             }
-        }
-
-        [HarmonyPatch(nameof(TravelLookMenu.GetUltiBuffs))]
-        [HarmonyPostfix]
-        public static void PostGetUltimateBuffs(ref Il2CppSystem.Collections.Generic.List<Vector2Int> __result)
-        {
-            if (!(CustomCore.CustomUltimateBuffs.Count > 0))
-                return;
-            if (CustomCore.BuffArrayCount.Item2 < 0)
-                return;
-            for (int i = __result.Count - 1; i >= CustomCore.BuffArrayCount.Item2; i--)
+            if (!__instance.isDebuff)
             {
-                if (!CustomCore.CustomUltimateBuffs.ContainsKey(i) && i < __result.Count && i >= 0)
-                {
-                    __result.RemoveAt(i);
-                }
-            }
-        }
 
-        [HarmonyPatch(nameof(TravelLookMenu.GetDebuffs))]
-        [HarmonyPostfix]
-        public static void PostGetDebuffs(ref Il2CppSystem.Collections.Generic.List<int> __result)
-        {
-            if (!(CustomCore.CustomDebuffs.Count > 0))
-                return;
-            if (CustomCore.BuffArrayCount.Item3 < 0)
-                return;
-            for (int i = __result.Count - 1; i >= CustomCore.BuffArrayCount.Item3; i--)
-            {
-                if (!CustomCore.CustomDebuffs.ContainsKey(i) && i < __result.Count && i >= 0)
-                {
-                    __result.RemoveAt(i);
-                }
             }
         }
     }
-
-    [HarmonyPatch(typeof(TravelBuffMenu), nameof(TravelBuffMenu))]
-    public static class TravelBuffMenuPatch
-    {
-        [HarmonyPatch(nameof(TravelBuffMenu.GetDebuffPool))]
-        [HarmonyPostfix]
-        public static void PostGetDebuffPool(ref Il2CppSystem.Collections.Generic.List<int> __result)
-        {
-            if (!(CustomCore.CustomDebuffs.Count > 0))
-                return;
-            if (CustomCore.BuffArrayCount.Item3 < 0)
-                return;
-            for (int i = __result.Count - 1; i >= 0; i--)
-            {
-                if (!CustomCore.CustomDebuffs.ContainsKey(__result.ToArray()[i]) && i < __result.Count && i >= 0)
-                {
-                    __result.RemoveAt(i);
-                }
-            }
-        }
-    }*/
 
     /// <summary>
     /// 词条商店卡片贴图(是否有效没试未知)

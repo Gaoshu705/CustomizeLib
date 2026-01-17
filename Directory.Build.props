@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- 定义共享的游戏路径 -->
+    <ModsPath>F:\PVZRH_Melon\Mods</ModsPath>
+    <PluginsPath>F:\PVZRH_Bep\BepInEx\plugins</PluginsPath>
+  </PropertyGroup>
+</Project>

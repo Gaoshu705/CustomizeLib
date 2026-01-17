@@ -981,6 +981,19 @@ namespace CustomizeLib.MelonLoader
         }
 
         /// <summary>
+        /// 注册强究植物与对应词条
+        /// </summary>
+        /// <param name="plantType">强究类型</param>
+        /// <param name="list">强究词条ID列表</param>
+        public static void LinkStrongUltimateBuff(PlantType plantType, List<int> list)
+        {
+            if (!CustomStrongUltimatePlantBuffs.ContainsKey(plantType))
+                CustomStrongUltimatePlantBuffs.Add(plantType, list);
+            else
+                MelonLogger.Error($"Duplicate strong ultimate buffs type: {plantType}");
+        }
+
+        /// <summary>
         /// 注册自定义融合洋芋配方
         /// </summary>
         /// <param name="left">左植物</param>
@@ -1095,28 +1108,52 @@ namespace CustomizeLib.MelonLoader
         /// <param name="plantType">底层植物（原有）</param>
         /// <param name="cardType">卡槽植物（点击上去的）</param>
         /// <param name="action">执行的事件</param>
-        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action)
+        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action, [NotNull] CustomClickCardOnPlant onPlant)
         {
             if (CustomClickCardOnPlantEvents.ContainsKey((plantType, cardType)))
-                CustomClickCardOnPlantEvents[(plantType, cardType)].Add(action);
+                CustomClickCardOnPlantEvents[(plantType, cardType)].Add((action, onPlant));
             else
-                CustomClickCardOnPlantEvents.Add((plantType, cardType), new() { action });
+                CustomClickCardOnPlantEvents.Add((plantType, cardType), new() { (action, onPlant) });
         }
 
         /// <summary>
-        /// 注册自定义植物点击在另一植物上事件
+        /// 注册是否允许融合
         /// </summary>
-        /// <param name="plantType">底层植物（原有）</param>
-        /// <param name="cardType">卡槽植物（点击上去的）</param>
-        /// <param name="actions">执行的事件列表</param>
-        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] List<Action<Plant>> actions)
+        /// <param name="plantType">目标植物(融合后的)</param>
+        /// <param name="func">判断条件</param>
+        /// <param name="success">融合成功执行函数</param>
+        /// <param name="fail">融合失败执行函数</param>
+        public static void RegisterCustomFailMixEvent([NotNull] PlantType plantType, Func<bool>? func = null, Action? success = null, Action? fail = null)
         {
-            if (CustomClickCardOnPlantEvents.ContainsKey((plantType, cardType)))
-                foreach (var action in actions)
-                    CustomClickCardOnPlantEvents[(plantType, cardType)].Add(action);
+            if (!CustomFailMix.ContainsKey(plantType))
+                CustomFailMix.Add(plantType, (func, success, fail));
             else
-                CustomClickCardOnPlantEvents.Add((plantType, cardType), actions);
+                MelonLogger.Error($"Duplicate fail mix plant type: {plantType}");
         }
+
+        /// <summary>
+        /// 注册自定义融合事件
+        /// </summary>
+        /// <param name="baseType">底植物</param>
+        /// <param name="newType">种植植物</param>
+        /// <param name="actions">融合事件列表</param>
+        public static void RegisterCustomOnMixEvent(PlantType baseType, PlantType newType, List<Action<Plant>> actions)
+        {
+            if (!CustomOnMixEvent.ContainsKey((baseType, newType)))
+                CustomOnMixEvent.Add((baseType, newType), actions);
+            else
+                foreach (var item in actions)
+                    CustomOnMixEvent[(baseType, newType)].Add(item);
+        }
+
+        /// <summary>
+        /// 注册自定义融合事件
+        /// </summary>
+        /// <param name="baseType">底植物</param>
+        /// <param name="newType">种植植物</param>
+        /// <param name="action">融合时间</param>
+        public static void RegisterCustomOnMixEvent(PlantType baseType, PlantType newType, Action<Plant> action) =>
+            RegisterCustomOnMixEvent(baseType, newType, new List<Action<Plant>> { action });
 
         public override void OnLateInitializeMelon()
         {
@@ -1300,7 +1337,7 @@ namespace CustomizeLib.MelonLoader
         /// <summary>
         /// 自定义种植植物在另一植物上事件（当前位置的植物的类型，鼠标上的植物类型），Action参数：当前位置的植物
         /// </summary>
-        public static Dictionary<(PlantType, PlantType), List<Action<Plant>>> CustomClickCardOnPlantEvents { get; set; } = [];
+        public static Dictionary<(PlantType, PlantType), List<(Action<Plant>, CustomClickCardOnPlant)>> CustomClickCardOnPlantEvents { get; set; } = [];
 
         /// <summary>
         /// 存卡片检查的列表，用于管理Packet显示
@@ -1321,6 +1358,21 @@ namespace CustomizeLib.MelonLoader
         /// 自定义强究列表
         /// </summary>
         public static Dictionary<PlantType, int> CustomStrongUltimatePlants { get; set; } = [];
+
+        /// <summary>
+        /// 自定义强究-强究词条列表
+        /// </summary>
+        public static Dictionary<PlantType, List<int>> CustomStrongUltimatePlantBuffs { get; set; } = [];
+
+        /// <summary>
+        /// 自定义融合条件列表 植物类型-(是否成功, 成功事件, 失败事件)
+        /// </summary>
+        public static Dictionary<PlantType, (Func<bool>?, Action?, Action?)> CustomFailMix { get; set; } = [];
+
+        /// <summary>
+        /// 自定义植物融合事件 (底植物,融合植物)-触发事件(融合后植物)
+        /// </summary>
+        public static Dictionary<(PlantType, PlantType), List<Action<Plant>>> CustomOnMixEvent { get; set; } = [];
 
         /*/// <summary>
         /// 注册时缓存皮肤，加载时注册

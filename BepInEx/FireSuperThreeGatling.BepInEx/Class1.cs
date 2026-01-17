@@ -56,44 +56,47 @@ namespace FireSuperThreeGatling.BepInEx
     {
         [HarmonyPatch(nameof(Shooter.GetBulletType))]
         [HarmonyPrefix]
-        public static void Prefix(Shooter __instance, ref BulletType __result)
+        public static bool Prefix(Shooter __instance, ref BulletType __result)
         {
-            if (__instance == null) return;
-            if ((int)__instance.thePlantType != Core.PlantID) return;
-            int random = UnityEngine.Random.RandomRange(0, 6);
-            switch (random)
+            if (__instance != null && (int)__instance.thePlantType == Core.PlantID)
             {
-                case 0:
-                case 1:
-                    __result = BulletType.Bullet_firePea_red;
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                    __result = BulletType.Bullet_firePea_orange;
-                    break;
-                default:
-                    __result = BulletType.Bullet_firePea_yellow;
-                    break;
-            }
-            bool isDamageUnChange = __instance.attackDamage == 80 ||
-                __instance.attackDamage == 100 ||
-                __instance.attackDamage == 120;
-            if (isDamageUnChange)
-            {
-                switch (__result)
+                int random = UnityEngine.Random.RandomRange(0, 6);
+                switch (random)
                 {
-                    case BulletType.Bullet_firePea_yellow:
-                        __instance.attackDamage = 80;
+                    case 0:
+                    case 1:
+                        __result = BulletType.Bullet_firePea_red;
                         break;
-                    case BulletType.Bullet_firePea_orange:
-                        __instance.attackDamage = 100;
+                    case 2:
+                    case 3:
+                    case 4:
+                        __result = BulletType.Bullet_firePea_orange;
                         break;
-                    case BulletType.Bullet_firePea_red:
-                        __instance.attackDamage = 120;
+                    default:
+                        __result = BulletType.Bullet_firePea_yellow;
                         break;
                 }
+                bool isDamageUnChange = __instance.attackDamage == 80 ||
+                    __instance.attackDamage == 100 ||
+                    __instance.attackDamage == 120;
+                if (isDamageUnChange)
+                {
+                    switch (__result)
+                    {
+                        case BulletType.Bullet_firePea_yellow:
+                            __instance.attackDamage = 80;
+                            break;
+                        case BulletType.Bullet_firePea_orange:
+                            __instance.attackDamage = 100;
+                            break;
+                        case BulletType.Bullet_firePea_red:
+                            __instance.attackDamage = 120;
+                            break;
+                    }
+                }
+                return false;
             }
+            return true;
         }
     }
 

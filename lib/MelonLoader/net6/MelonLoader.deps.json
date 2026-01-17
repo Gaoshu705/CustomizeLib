@@ -7,17 +7,17 @@
   "targets": {
     ".NETCoreApp,Version=v6.0": {},
     ".NETCoreApp,Version=v6.0/win-x64": {
-      "MelonLoader/0.7.1": {
+      "MelonLoader/0.7.0": {
         "dependencies": {
-          "AsmResolver.DotNet": "6.0.0-beta.3",
-          "AssetRipper.Primitives": "3.1.4",
+          "AsmResolver.DotNet": "6.0.0-beta.1",
+          "AssetRipper.VersionUtilities": "1.5.0",
           "AssetsTools.NET": "3.0.0-preview3",
           "HarmonyX": "2.10.2",
           "Iced": "1.21.0",
-          "Il2CppInterop.Common": "1.5.0-ci.625",
-          "Il2CppInterop.Generator": "1.5.0-ci.625",
-          "Il2CppInterop.HarmonySupport": "1.5.0-ci.625",
-          "Il2CppInterop.Runtime": "1.5.0-ci.625",
+          "Il2CppInterop.Common": "1.4.6-ci.579",
+          "Il2CppInterop.Generator": "1.4.6-ci.579",
+          "Il2CppInterop.HarmonySupport": "1.4.6-ci.579",
+          "Il2CppInterop.Runtime": "1.4.6-ci.579",
           "Microsoft.Diagnostics.Runtime": "3.1.512801",
           "Mono.Cecil": "0.11.6",
           "MonoMod": "22.7.31.1",
@@ -26,6 +26,7 @@
           "Newtonsoft.Json": "13.0.3",
           "Samboy063.Tomlet": "5.4.0",
           "System.Configuration.ConfigurationManager": "8.0.1",
+          "System.Drawing.Common": "8.0.10",
           "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
           "System.Security.Permissions": "8.0.0",
           "bHapticsLib": "1.0.6"
@@ -34,7 +35,7 @@
           "MelonLoader.dll": {}
         }
       },
-      "AsmResolver/6.0.0-beta.3": {
+      "AsmResolver/6.0.0-beta.1": {
         "runtime": {
           "lib/net6.0/AsmResolver.dll": {
             "assemblyVersion": "6.0.0.0",
@@ -42,9 +43,9 @@
           }
         }
       },
-      "AsmResolver.DotNet/6.0.0-beta.3": {
+      "AsmResolver.DotNet/6.0.0-beta.1": {
         "dependencies": {
-          "AsmResolver.PE": "6.0.0-beta.3"
+          "AsmResolver.PE": "6.0.0-beta.1"
         },
         "runtime": {
           "lib/net6.0/AsmResolver.DotNet.dll": {
@@ -53,9 +54,9 @@
           }
         }
       },
-      "AsmResolver.PE/6.0.0-beta.3": {
+      "AsmResolver.PE/6.0.0-beta.1": {
         "dependencies": {
-          "AsmResolver.PE.File": "6.0.0-beta.3"
+          "AsmResolver.PE.File": "6.0.0-beta.1"
         },
         "runtime": {
           "lib/net6.0/AsmResolver.PE.dll": {
@@ -64,9 +65,9 @@
           }
         }
       },
-      "AsmResolver.PE.File/6.0.0-beta.3": {
+      "AsmResolver.PE.File/6.0.0-beta.1": {
         "dependencies": {
-          "AsmResolver": "6.0.0-beta.3"
+          "AsmResolver": "6.0.0-beta.1"
         },
         "runtime": {
           "lib/net6.0/AsmResolver.PE.File.dll": {
@@ -75,11 +76,11 @@
           }
         }
       },
-      "AssetRipper.Primitives/3.1.4": {
+      "AssetRipper.VersionUtilities/1.5.0": {
         "runtime": {
-          "lib/net6.0/AssetRipper.Primitives.dll": {
-            "assemblyVersion": "3.1.4.0",
-            "fileVersion": "3.1.4.0"
+          "lib/net6.0/AssetRipper.VersionUtilities.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
           }
         }
       },
@@ -122,7 +123,7 @@
           }
         }
       },
-      "Il2CppInterop.Common/1.5.0-ci.625": {
+      "Il2CppInterop.Common/1.4.6-ci.579": {
         "dependencies": {
           "Iced": "1.21.0",
           "Microsoft.Extensions.Logging.Abstractions": "6.0.1",
@@ -130,45 +131,45 @@
         },
         "runtime": {
           "lib/netstandard2.0/Il2CppInterop.Common.dll": {
-            "assemblyVersion": "1.5.0.0",
-            "fileVersion": "1.5.0.0"
+            "assemblyVersion": "1.4.6.0",
+            "fileVersion": "1.4.6.0"
           }
         }
       },
-      "Il2CppInterop.Generator/1.5.0-ci.625": {
+      "Il2CppInterop.Generator/1.4.6-ci.579": {
         "dependencies": {
-          "AsmResolver.DotNet": "6.0.0-beta.3",
-          "Il2CppInterop.Common": "1.5.0-ci.625",
+          "AsmResolver.DotNet": "6.0.0-beta.1",
+          "Il2CppInterop.Common": "1.4.6-ci.579",
           "MonoMod.Backports": "1.1.2"
         },
         "runtime": {
           "lib/netstandard2.1/Il2CppInterop.Generator.dll": {
-            "assemblyVersion": "1.5.0.0",
-            "fileVersion": "1.5.0.0"
+            "assemblyVersion": "1.4.6.0",
+            "fileVersion": "1.4.6.0"
           }
         }
       },
-      "Il2CppInterop.HarmonySupport/1.5.0-ci.625": {
+      "Il2CppInterop.HarmonySupport/1.4.6-ci.579": {
         "dependencies": {
           "HarmonyX": "2.10.2",
-          "Il2CppInterop.Runtime": "1.5.0-ci.625"
+          "Il2CppInterop.Runtime": "1.4.6-ci.579"
         },
         "runtime": {
           "lib/net6.0/Il2CppInterop.HarmonySupport.dll": {
-            "assemblyVersion": "1.5.0.0",
-            "fileVersion": "1.5.0.0"
+            "assemblyVersion": "1.4.6.0",
+            "fileVersion": "1.4.6.0"
           }
         }
       },
-      "Il2CppInterop.Runtime/1.5.0-ci.625": {
+      "Il2CppInterop.Runtime/1.4.6-ci.579": {
         "dependencies": {
           "Iced": "1.21.0",
-          "Il2CppInterop.Common": "1.5.0-ci.625"
+          "Il2CppInterop.Common": "1.4.6-ci.579"
         },
         "runtime": {
           "lib/net6.0/Il2CppInterop.Runtime.dll": {
-            "assemblyVersion": "1.5.0.0",
-            "fileVersion": "1.5.0.0"
+            "assemblyVersion": "1.4.6.0",
+            "fileVersion": "1.4.6.0"
           }
         }
       },
@@ -306,6 +307,14 @@
           "Microsoft.NETCore.Targets": "1.1.0",
           "System.Runtime": "4.3.0",
           "runtime.win.Microsoft.Win32.Primitives": "4.3.0"
+        }
+      },
+      "Microsoft.Win32.SystemEvents/8.0.0": {
+        "runtime": {
+          "runtimes/win/lib/net6.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
         }
       },
       "Mono.Cecil/0.11.6": {
@@ -643,6 +652,17 @@
           "Microsoft.NETCore.Targets": "1.1.0",
           "System.Runtime": "4.3.0",
           "runtime.any.System.Diagnostics.Tracing": "4.3.0"
+        }
+      },
+      "System.Drawing.Common/8.0.10": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/System.Drawing.Common.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.1024.46803"
+          }
         }
       },
       "System.Globalization/4.3.0": {
@@ -1054,45 +1074,45 @@
     }
   },
   "libraries": {
-    "MelonLoader/0.7.1": {
+    "MelonLoader/0.7.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "AsmResolver/6.0.0-beta.3": {
+    "AsmResolver/6.0.0-beta.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-e9fNRMqqFqdwKsaUz9XeWAJxS1bRVA6OIrRkjeN3fWjfNIeDKWivZWQhl2S9Sxga1Qymo4ZCZ3agm4XY05UOHQ==",
-      "path": "asmresolver/6.0.0-beta.3",
-      "hashPath": "asmresolver.6.0.0-beta.3.nupkg.sha512"
+      "sha512": "sha512-M5btCR/rmrx32jZsoN6CLQ/VQk8lN8hvPb6lgojua7pjNoo7StAl92koMC8qz4vzZyH2CNqxLSDoswRvyyK/vA==",
+      "path": "asmresolver/6.0.0-beta.1",
+      "hashPath": "asmresolver.6.0.0-beta.1.nupkg.sha512"
     },
-    "AsmResolver.DotNet/6.0.0-beta.3": {
+    "AsmResolver.DotNet/6.0.0-beta.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-NJS6okCAVtUc5HOZ3rD3uKo+Bl7m1n+cxFv0z5wInCmfKckwZaKc2ZQsF9D8tpNy8SG86vu30OgCjDbSwsGbkA==",
-      "path": "asmresolver.dotnet/6.0.0-beta.3",
-      "hashPath": "asmresolver.dotnet.6.0.0-beta.3.nupkg.sha512"
+      "sha512": "sha512-PTq8nNQvhgTxF1iARCknffCsu7Iq9B0kN7TVC8iMaU7uEYog3xvVqH/0+TreY8GW74/+MqhZt/yEFsvS4oAduQ==",
+      "path": "asmresolver.dotnet/6.0.0-beta.1",
+      "hashPath": "asmresolver.dotnet.6.0.0-beta.1.nupkg.sha512"
     },
-    "AsmResolver.PE/6.0.0-beta.3": {
+    "AsmResolver.PE/6.0.0-beta.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mboFQ4uLoy4+E6uZJKtVDGPTdA/jUIlKw3VNiLw92YeiKzbId7zlt1ODSQR3DccbIsMG9g7CrlZ25uXTybYlig==",
-      "path": "asmresolver.pe/6.0.0-beta.3",
-      "hashPath": "asmresolver.pe.6.0.0-beta.3.nupkg.sha512"
+      "sha512": "sha512-KadLvx/zzFCJyF+E4jG6jPE1d0iJquzL6+hm8GBivBAs6nwHC8s6g4c857QwQCzXMWza6Vz5Q+3hFiNuOfKaWQ==",
+      "path": "asmresolver.pe/6.0.0-beta.1",
+      "hashPath": "asmresolver.pe.6.0.0-beta.1.nupkg.sha512"
     },
-    "AsmResolver.PE.File/6.0.0-beta.3": {
+    "AsmResolver.PE.File/6.0.0-beta.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gAEMcjfngmJx4Iix4YgFCdY//C6lG7ZMy5xurqlisyDUpduFF/5U3Vi2+Bt+OCqvIpyzCSS/HOFZRNP0Tfi7+g==",
-      "path": "asmresolver.pe.file/6.0.0-beta.3",
-      "hashPath": "asmresolver.pe.file.6.0.0-beta.3.nupkg.sha512"
+      "sha512": "sha512-+lusB9UMHevI5aQsu73NQ1ctPMLFvyHAsEf8vjaJ/py+kX1DkU0JkbERtBRmaf58/hBZ7cyrE7gFnjoo7Bbg7A==",
+      "path": "asmresolver.pe.file/6.0.0-beta.1",
+      "hashPath": "asmresolver.pe.file.6.0.0-beta.1.nupkg.sha512"
     },
-    "AssetRipper.Primitives/3.1.4": {
+    "AssetRipper.VersionUtilities/1.5.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-WFPXPetkArrF8HIgAi+vnRrAgsxdhcjCljIUKAdzxbJ/8G3LaEY2YaNZhPrn5cMzzI34kJgv0zVBAp4u3/5k+Q==",
-      "path": "assetripper.primitives/3.1.4",
-      "hashPath": "assetripper.primitives.3.1.4.nupkg.sha512"
+      "sha512": "sha512-WHIfN5HlKIitJyeK+wt9d+lH22yMAqZ412QSKjwvS1Y5jdGJHwalNRn2H/tODHyUqZotMSXGo9acPWkiW8k/Yg==",
+      "path": "assetripper.versionutilities/1.5.0",
+      "hashPath": "assetripper.versionutilities.1.5.0.nupkg.sha512"
     },
     "AssetsTools.NET/3.0.0-preview3": {
       "type": "package",
@@ -1122,33 +1142,33 @@
       "path": "iced/1.21.0",
       "hashPath": "iced.1.21.0.nupkg.sha512"
     },
-    "Il2CppInterop.Common/1.5.0-ci.625": {
+    "Il2CppInterop.Common/1.4.6-ci.579": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-UGlvPtHLXlfx4//JVjIOCSJbWQa2LU3uLQflfdsMyPhGh8v7kmLbmZ9Jazj/re54xCOHeqSPTxmhBOm/Pk0Zwg==",
-      "path": "il2cppinterop.common/1.5.0-ci.625",
-      "hashPath": "il2cppinterop.common.1.5.0-ci.625.nupkg.sha512"
+      "sha512": "sha512-tHgbpO/VzIl2u/IB0nEge8TanmwUXygsnSwu6l7mHXqEU9qpWf7MpEf2QDZQk77z94S22gxH3hIFPovck4arIQ==",
+      "path": "il2cppinterop.common/1.4.6-ci.579",
+      "hashPath": "il2cppinterop.common.1.4.6-ci.579.nupkg.sha512"
     },
-    "Il2CppInterop.Generator/1.5.0-ci.625": {
+    "Il2CppInterop.Generator/1.4.6-ci.579": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-AX9E4LC0hrzAXhrlc8i01WXhDyPDU0AIKXBEjbUJDhM/4qvVVi4xOJIMkjX2o6gver2/JPCEuMpErVn+OpoHlg==",
-      "path": "il2cppinterop.generator/1.5.0-ci.625",
-      "hashPath": "il2cppinterop.generator.1.5.0-ci.625.nupkg.sha512"
+      "sha512": "sha512-hakzsEtIUhwfPJVpdJ+K3O1Q71H3T12Yr+rtqzjMMKhmXJlTzM35qtMwm0G/dHOIp2puLMptPUto5fmjeOC66Q==",
+      "path": "il2cppinterop.generator/1.4.6-ci.579",
+      "hashPath": "il2cppinterop.generator.1.4.6-ci.579.nupkg.sha512"
     },
-    "Il2CppInterop.HarmonySupport/1.5.0-ci.625": {
+    "Il2CppInterop.HarmonySupport/1.4.6-ci.579": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Xjwn+s/uo/q8YwweBBF+1NT8KuWqzHwmChMUFXdhp3z3qROLqE4qLv0Kpf8EtlZ7dWf3MU6a6tiIsCBYZCLThg==",
-      "path": "il2cppinterop.harmonysupport/1.5.0-ci.625",
-      "hashPath": "il2cppinterop.harmonysupport.1.5.0-ci.625.nupkg.sha512"
+      "sha512": "sha512-ktG4o7J7It7rKE6nEouvlLJf0XiQxFphAZ/28AjVR/c9HRnvzqbCNvoaO+G5xII2gnl/WQIPPzblugaq7+iaaA==",
+      "path": "il2cppinterop.harmonysupport/1.4.6-ci.579",
+      "hashPath": "il2cppinterop.harmonysupport.1.4.6-ci.579.nupkg.sha512"
     },
-    "Il2CppInterop.Runtime/1.5.0-ci.625": {
+    "Il2CppInterop.Runtime/1.4.6-ci.579": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-B0Ba22mZ+LnGq02X8f8lMR8BDul2uUBVtz/DqM/XfA51/TXl6nMMiJyQKYlUFCwspoWv+U8M0tAJkEyPu85doQ==",
-      "path": "il2cppinterop.runtime/1.5.0-ci.625",
-      "hashPath": "il2cppinterop.runtime.1.5.0-ci.625.nupkg.sha512"
+      "sha512": "sha512-JsDgaX2rLdG5Y9Z0im5i0RmnKgsQZdNvxOXSqwPCmHTvWihfI+3fPtsqNmigst54+sMdFj6Nocd8ayBg+ZCc5Q==",
+      "path": "il2cppinterop.runtime/1.4.6-ci.579",
+      "hashPath": "il2cppinterop.runtime.1.4.6-ci.579.nupkg.sha512"
     },
     "IndexRange/1.0.2": {
       "type": "package",
@@ -1254,6 +1274,13 @@
       "sha512": "sha512-9ZQKCWxH7Ijp9BfahvL2Zyf1cJIk8XYLF6Yjzr2yi0b2cOut/HQ31qf1ThHAgCc3WiZMdnWcfJCgN82/0UunxA==",
       "path": "microsoft.win32.primitives/4.3.0",
       "hashPath": "microsoft.win32.primitives.4.3.0.nupkg.sha512"
+    },
+    "Microsoft.Win32.SystemEvents/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw==",
+      "path": "microsoft.win32.systemevents/8.0.0",
+      "hashPath": "microsoft.win32.systemevents.8.0.0.nupkg.sha512"
     },
     "Mono.Cecil/0.11.6": {
       "type": "package",
@@ -1639,6 +1666,13 @@
       "sha512": "sha512-rswfv0f/Cqkh78rA5S8eN8Neocz234+emGCtTF3lxPY96F+mmmUen6tbn0glN6PMvlKQb9bPAY5e9u7fgPTkKw==",
       "path": "system.diagnostics.tracing/4.3.0",
       "hashPath": "system.diagnostics.tracing.4.3.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/8.0.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MdajRp3P+FOlThgY6FBjAqnmLiVl5t2yWEC/2AsDMqx1zYbJG3G5TnscFBQ4obqcaGqvN5UnhQHSFaJFG2HftQ==",
+      "path": "system.drawing.common/8.0.10",
+      "hashPath": "system.drawing.common.8.0.10.nupkg.sha512"
     },
     "System.Globalization/4.3.0": {
       "type": "package",

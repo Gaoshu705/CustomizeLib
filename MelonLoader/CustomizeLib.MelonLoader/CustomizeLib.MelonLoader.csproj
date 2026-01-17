@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -411,7 +411,8 @@
     <Using Include="Il2Cpp" />
   </ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;..\..\res\MelonLoader\Mods&quot;" />
+		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;F:\vsrepos\Customizelib\res\MelonLoader\Mods&quot;" />
+		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(ModsPath)&quot;" />
 	</Target>
 
 </Project>

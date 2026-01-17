@@ -130,6 +130,22 @@ namespace CustomizeLib.MelonLoader
         public int WaterZombie { get; set; } = -1;
     }
 
+    public struct CustomClickCardOnPlant
+    {
+        public bool BlockFusion { get; set; } = false;
+        public TriggerType Trigger { get; set; } = TriggerType.All;
+        public bool ClearOrigin { get; set; } = true;
+
+        public CustomClickCardOnPlant() { }
+
+        public enum TriggerType
+        {
+            All = 0,
+            CardOnly = 1,
+            GloveOnly = 2
+        }
+    }
+
     public static class Extensions
     {
         /// <summary>
